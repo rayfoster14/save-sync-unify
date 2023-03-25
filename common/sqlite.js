@@ -26,6 +26,43 @@ let get = function(y){
         db.close();
     })
 }
+
+let write = function(y, z){
+    return new Promise(function(resolve,reject){
+    db = new sqlite3.Database(dbFile, sqlite3.OPEN_READWRITE, (err) => {
+        db.run(y,z,function(err,res){
+            if(err){  console.log(err); resolve(false) }
+            resolve(true);
+        });
+        });
+        db.close();
+    })
+}
+
+let objToUpdate = function(obj){
+    let id = obj.id;
+    delete obj.id;
+    let keys = Object.keys(obj);
+    let vals = Object.values(obj);
+    vals.push(id);
+    return {
+        fields: keys.join(" = ? , ") + " = ? ",
+        vals, 
+    }
+}
+let objToNew = function(obj){
+    let keys = Object.keys(obj);
+    let vals = Object.values(obj);
+    let qs = [];
+    for(let i = 0; i < vals.length; i++){
+        qs.push('?')
+    }
+    return {
+        fields: keys.join(','),
+        qs: qs.join(','),
+        vals
+    }
+}
     
 
 let setup = async function(){
@@ -58,4 +95,19 @@ let getConfig = async function(){
     return await get(`SELECT * FROM platforms`);
 }
 
-module.exports={setup, getConfig}
+let writeConfig = async function(data){
+    if(data.id){
+        let toUpdate = objToUpdate(data);
+        let query = `UPDATE platforms SET ${toUpdate.fields} WHERE id = ?`;
+        let response =  await write(query, toUpdate.vals);
+        return response;
+    }else{
+        delete data.id
+        let toNew = objToNew(data);
+        let query = `INSERT INTO platforms (${toNew.fields}) VALUES (${toNew.qs})`;
+        let response = await write(query, toNew.vals);
+        return response
+    }
+}
+
+module.exports={setup, getConfig, writeConfig}
