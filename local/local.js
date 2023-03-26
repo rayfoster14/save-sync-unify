@@ -1,6 +1,14 @@
 
 require('dotenv').config()
-let c = require('../common/common.js');
+global.c = require('../common/common.js');
 
 c.startup();
-console.log(c.search());
+
+
+let main = async function(){
+    let config = await c.db.getConfig();
+    let online = await c.devices.getOnlineDevices(config, 'local');
+    console.log(online)
+}
+
+main();

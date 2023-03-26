@@ -4,22 +4,35 @@ let path = process.env.REPO_PATH;
 let dbFile = `${path}/repo.db`;
 let db;
 let tables = {
-    platforms:{
-        device: 'text',
-        type: 'text',
-        paths: 'text',
-        ftpUser:'text',
-        ftpPW:'text',
-        discovery_server: 'boolean',
-        discoovery_local: 'boolean'
+    devices:{
+        "device":	        "TEXT",
+        "type":             "TEXT",
+        "paths"	:           "TEXT",
+        "ftpUser":      	"TEXT",
+        "ftpPW":	        "TEXT",
+        "name":         	"TEXT",
+        "localExistCheck":	"TEXT",
+        "ftpAddress":	    "TEXT",
+        "extensionSearch":	"TEXT",
+        "ftpPort":	        "TEXT"
+    },
+    discovery:{
+            "device":	"TEXT",
+	        "instance":	"TEXT",
+	        "discover":	"INTERGER"
     }
 }
+
+
 
 let get = function(y){
     return new Promise(function(resolve,reject){
     db = new sqlite3.Database(dbFile, sqlite3.OPEN_READWRITE, (err) => {
         db.all(y,function(err,res){
-            if(err){   }
+            if(err){
+                console.log(err)
+                resolve(false)
+            }
             resolve(res);
         });
         });
@@ -86,28 +99,49 @@ let setup = async function(){
             db.run(createQuery,function(err){if(err){}});
             
         })
-        console.log('Connected to the database.');
+        //console.log('Connected to the database.');
     });
     db.close()
 };
 
 let getConfig = async function(){
-    return await get(`SELECT * FROM platforms`);
+    return await get(`SELECT * FROM devices`);
 }
 
 let writeConfig = async function(data){
     if(data.id){
         let toUpdate = objToUpdate(data);
-        let query = `UPDATE platforms SET ${toUpdate.fields} WHERE id = ?`;
+        let query = `UPDATE devices SET ${toUpdate.fields} WHERE id = ?`;
         let response =  await write(query, toUpdate.vals);
         return response;
     }else{
         delete data.id
         let toNew = objToNew(data);
-        let query = `INSERT INTO platforms (${toNew.fields}) VALUES (${toNew.qs})`;
+        let query = `INSERT INTO devices (${toNew.fields}) VALUES (${toNew.qs})`;
         let response = await write(query, toNew.vals);
         return response
     }
 }
 
-module.exports={setup, getConfig, writeConfig}
+let getPreferences = async function(instance){
+    return await get(`SELECT * FROM discovery WHERE instance = "${instance}"`)
+}
+
+let writePreference = async function(instance, {device, discover}){
+    let obj = {device,instance,discover};
+    let currentData = await get(`SELECT * FROM discovery WHERE instance = "${instance}" AND device = "${device}"`);
+    if(currentData.length !== 0 ){
+        obj.id = currentData[0].id;
+        let toUpdate = objToUpdate(obj);
+        let query = `UPDATE discovery SET ${toUpdate.fields} WHERE id = ?`;
+        let response =  await write(query, toUpdate.vals);
+        return response;
+    }else{
+        let toNew = objToNew(obj);
+        let query = `INSERT INTO discovery (${toNew.fields}) VALUES (${toNew.qs})`;
+        let response = await write(query, toNew.vals);
+        return response
+    }
+}
+
+module.exports={setup, getConfig, writeConfig, getPreferences, writePreference}

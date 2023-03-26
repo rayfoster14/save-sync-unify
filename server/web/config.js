@@ -52,7 +52,7 @@ let render = async function(){
             let fieldName = fields[e];
             if(fieldName === "id") continue;
             if(fieldList.indexOf(fieldName) === -1) fieldList.push(fieldName)
-            html += `${fieldName}<input class="attrField" deviceid="${data[i].id}" fieldname="${fieldName}" id="${data[i].id}&${fieldName}" value="${data[i][fieldName]}" />`
+            html += `${fieldName}<input class="attrField" deviceid="${data[i].id}" fieldname="${fieldName}" id="${data[i].id}&${fieldName}" value='${data[i][fieldName]}' />`
         }
         html+=`<span onClick="save(this)" deviceid="${data[i].id}" id="${data[i].id}_SAVE">SAVE</span></div>`
     }
