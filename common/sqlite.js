@@ -144,4 +144,8 @@ let writePreference = async function(instance, {device, discover}){
     }
 }
 
-module.exports={setup, getConfig, writeConfig, getPreferences, writePreference}
+let getSchema = function(){
+    return tables;
+}
+
+module.exports={setup, getConfig, writeConfig, getPreferences, writePreference, getSchema}

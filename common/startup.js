@@ -4,6 +4,12 @@ let pth = require('path');
 let crypto = require('crypto');
 
 module.exports = async function(){
+
+    if(!process.env.REPO_PATH){
+        console.log('NO REPO PATH')
+    }
+
+
     //Makes runtime identity
     let identifierPath = pth.join(process.cwd(), 'instance');
     global.identity = fs.existsSync(identifierPath) ? fs.readFileSync(identifierPath).toString() : function(){
@@ -12,7 +18,6 @@ module.exports = async function(){
         return newId;
     }();
     
-    let path = process.env.REPO_PATH;
 
     //DB Check
     await db.setup();

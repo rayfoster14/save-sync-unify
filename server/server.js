@@ -4,7 +4,7 @@ const port = 3000;
 const path = require('path');
 const fs = require('fs');
 
-require('dotenv').config()
+require('dotenv').config();
 global.c = require('../common/common.js');
 app.use(express.urlencoded({
     extended: true
@@ -39,6 +39,11 @@ app.post(apiPrefix+'/writePreferences', async function(request, response){
 app.get('/configData/getDevices',  async function(request,response){
     let config =  await c.db.getConfig();
     response.send(config);
+    response.end()
+});
+app.get('/configData/getSchema',  async function(request,response){
+    let schema =  await c.db.getSchema();
+    response.send(schema);
     response.end()
 });
 app.post('/configData/writeDevice', async function(request, response){

@@ -26,12 +26,14 @@ let save = async function(e){
     e.classList.add(response.writeResponse?'successful':'failed')    
 }
 
-let newRow = function(){
+let newRow = async function(){
     document.getElementById('addBtn').classList.add('hidden');
     let html="<div class='deviceFields'>"
+    let schema = (await (await fetch('/configData/getSchema')).json()).devices;
+    let schemaList = Object.keys(schema);
 
-    for(let e = 0; e < fieldList.length; e++){
-        let fieldName = fieldList[e];
+    for(let e = 0; e < schemaList.length; e++){
+        let fieldName = schemaList[e];
         html += `${fieldName}<input class="attrField" fieldname="${fieldName}"  />`
     }
     html+=`<span onClick="save(this)"  id="NEW_SAVE">SAVE</span></div>`;
@@ -51,7 +53,6 @@ let render = async function(){
         for(let e = 0; e < fields.length; e++){
             let fieldName = fields[e];
             if(fieldName === "id") continue;
-            if(fieldList.indexOf(fieldName) === -1) fieldList.push(fieldName)
             html += `${fieldName}<input class="attrField" deviceid="${data[i].id}" fieldname="${fieldName}" id="${data[i].id}&${fieldName}" value='${data[i][fieldName]}' />`
         }
         html+=`<span onClick="save(this)" deviceid="${data[i].id}" id="${data[i].id}_SAVE">SAVE</span></div>`
