@@ -80,13 +80,18 @@ let objToNew = function(obj){
 
 let setup = async function(){
     if(!fs.existsSync(dbFile)) fs.writeFileSync(dbFile,'');
-    db = new sqlite3.Database(dbFile, sqlite3.OPEN_READWRITE, (err) => {
+    db = await new sqlite3.Database(dbFile, sqlite3.OPEN_READWRITE, async function(err) {
+        console.group('NEW TABLE START')
         if (err) {
-        console.error(err.message);
+            console.log('ERROR NUM 1')
+            console.error(err.message);
         }
 
-        Object.values(tables).forEach(function(table, tableIndex){
-            
+        console.log('TABLES...');
+        let values = Object.values(tables);
+        for(let u = 0; u < values.length; u++){
+            let table = values[u];
+            let tableIndex = u
             let keys = Object.keys(table);
             let vals = Object.values(table);
 
@@ -96,12 +101,20 @@ let setup = async function(){
             }
 
             let createQuery = `CREATE TABLE ${Object.keys(tables)[tableIndex]} (id INTEGER PRIMARY KEY AUTOINCREMENT, ${fields})`;
-            db.run(createQuery,function(err){if(err){}});
+
+            console.log('OK GONNA CREATYE NEW TABLE NOMW...')
+            await db.run(createQuery,function(err2){
+                if(err2){
+                    console.log('CREATE ERROR')
+                    console.log(err2)
+                }
+                console.log('RAN THE CREATE QUERY FOR '+Object.keys(tables)[tableIndex])});
             
-        })
+            }
         //console.log('Connected to the database.');
     });
-    db.close()
+    await db.close()
+  
 };
 
 let getConfig = async function(){

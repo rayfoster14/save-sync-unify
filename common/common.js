@@ -5,6 +5,7 @@ module.exports={
     db: require('./sqlite.js'),
     devices:require('./devices.js'),
     ftp:require('./ftp.js'),
-    local:require('./local.js')
+    local:require('./local.js'),
+    functions:require('./functions.js')
 
 }

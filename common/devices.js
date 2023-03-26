@@ -10,6 +10,11 @@ let getOnlineDevices = async function(config, mode){
     return config
 }
 
+let copyToRepo = async function(devices){
+
+}
+
 module.exports={
-    getOnlineDevices
+    getOnlineDevices,
+    copyToRepo
 }

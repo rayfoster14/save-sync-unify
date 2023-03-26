@@ -14,6 +14,13 @@
     "enquirer": "^2.3.6",
     "express": "^4.18.2",
     "is-reachable": "^5.2.1",
+    "nexe": "^4.0.0-rc.2",
     "sqlite3": "^5.1.6"
+  },
+  "bin": "server/server.js",
+  "pkg": {
+    "assets": [
+      "plugins/lib.js"
+    ]
   }
 }
