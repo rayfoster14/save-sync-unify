@@ -2,17 +2,21 @@
 require('dotenv').config();
 let fs = require('fs');
 global.c = require('../common/common.js');
-global.p = require('../plugins/lib.js');
 let ui = require('./ui.js');
-let instance = fs.readFileSync('instance').toString();
+let plugins = require('../plugins/exec.js').plugins();
+
 let preferences, devices;
-p()
+
+
+c.startup();
+let instance = fs.readFileSync('instance').toString();
+
 
 //Edits the discovery configuration
 let editDiscovery = async function(devices){
     let exit = false;
     if(await ui.bool('Edit Config?')){
-        let deviceId = await ui.select(devices.map(function(x){return {message:x.name, value:x.device} }), 'Discover which device?');
+        let deviceId = await ui.select(devices.map(function(x){return {text:x.name, value:x.device} }), 'Discover which device?');
         let discoveryVal = await ui.bool('Discover this device?');
         await c.db.writePreference(instance, {device:deviceId, discover:discoveryVal})
         preferences = await c.db.getPreferences(instance);
@@ -46,7 +50,6 @@ let listConfiguration = async function(devices,preferences){
 
 
 let main = async function(){
-    await c.startup();
 
     let config = await c.db.getConfig();
     devices = await c.devices.getOnlineDevices(config, 'local');

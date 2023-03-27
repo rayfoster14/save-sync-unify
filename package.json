@@ -11,16 +11,16 @@
   "dependencies": {
     "basic-ftp": "^5.0.2",
     "dotenv": "^16.0.3",
-    "enquirer": "^2.3.6",
     "express": "^4.18.2",
     "is-reachable": "^5.2.1",
-    "nexe": "^4.0.0-rc.2",
+    "readline-sync": "^1.4.10",
     "sqlite3": "^5.1.6"
   },
-  "bin": "server/server.js",
-  "pkg": {
-    "assets": [
-      "plugins/lib.js"
+  "bin": "local/local.js",
+  "pkg":{
+    "assets":[
+      "./node_modules/sqlite3/lib/binding/napi-v6-win32-unknown-x64/node_sqlite3.node",
+      "./plugins/exec.js"
     ]
   }
 }
