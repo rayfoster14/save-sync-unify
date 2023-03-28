@@ -4,3 +4,5 @@ package-lock.json
 *.env
 *.db
 *instance
+**/TEMP
+**/plugins

@@ -7,7 +7,10 @@ module.exports = async function(){
 
     if(!process.env.REPO_PATH){
         console.log('NO REPO PATH')
+    }else{
+        if(!fs.existsSync(process.env.REPO_PATH))fs.mkdirSync(process.env.REPO_PATH)
     }
+    if(!fs.existsSync('./TEMP'))fs.mkdirSync('./TEMP');
 
 
     //Makes runtime identity

@@ -1,9 +1,9 @@
+let run = function(){
 
 require('dotenv').config();
 let fs = require('fs');
 global.c = require('../common/common.js');
 let ui = require('./ui.js');
-let plugins = require('../plugins/exec.js').plugins();
 
 let preferences, devices;
 
@@ -61,8 +61,12 @@ let main = async function(){
     }while(!exitEdit)
 
     let online = c.functions.getMasterList(devices);
-    let files = c.devices.copyToRepo(online);
+    let files = await c.devices.prepareFiles(online);
+    console.log(files)
 
 }
 
 main();
+
+}
+module.exports=run

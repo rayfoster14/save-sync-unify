@@ -23,7 +23,7 @@ let save = async function(e){
 
     e.classList.remove('successful');
     e.classList.remove('failed');
-    e.classList.add(response.writeResponse?'successful':'failed')    
+    e.classList.add(response.writeResponse?'successful':'failed');    
 }
 
 let newRow = async function(){

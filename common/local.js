@@ -1,4 +1,5 @@
 let fs = require('fs');
+let globby = require('glob');
 
 let getDriveLetter = function (dir) {
     for (var i = 0; i < 26; i++) {
@@ -14,6 +15,45 @@ let getDriveDir = function(mountDir, dir){
         }
     }
 };
+
+let getFileList = function(dir){
+
+}
+
+let copyToTemp = async function(device){
+    device.fileList = {};
+    
+    for(let i = 0; i < device.platformList.length; i++){
+
+        let k = device.platformList[i];
+        let searchPath = `${device.basePath}/${device.paths[k]}`;
+        let searchExts = device.extensionSearch[k];
+        device.fileList[k] = [];
+
+
+        //Searches through FS for files with the correct extension
+        let found = [];
+        for(let v = 0; v < searchExts.length; v++){
+            let list = await globby(`${searchPath}/**/*.${searchExts[v]}`);
+            found = found.concat(list);
+        }
+
+        //Copy files to temp
+        for(let v = 0; v < found.length; v++){
+            let path = found[v].replace(/\\/g, '/');
+            let rootPath = path.replace(searchPath+'/', '');
+            
+            let tempPath = `./TEMP/${device.device}/${k}/${rootPath}`;
+            fs.cpSync(path, tempPath);
+
+            device.fileList[k].push({
+                temp: tempPath,
+                rootPath
+            });
+        }
+    }
+    return device;
+}
 
 
 module.exports={
@@ -44,5 +84,6 @@ module.exports={
             //What else are we running this on??
             return false;
         }
-    }
+    },
+    copyToTemp
 }

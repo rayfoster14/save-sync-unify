@@ -12,13 +12,14 @@
     "basic-ftp": "^5.0.2",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "glob": "^9.3.2",
     "is-reachable": "^5.2.1",
     "readline-sync": "^1.4.10",
     "sqlite3": "^5.1.6"
   },
   "bin": "local/local.js",
-  "pkg":{
-    "assets":[
+  "pkg": {
+    "assets": [
       "./node_modules/sqlite3/lib/binding/napi-v6-win32-unknown-x64/node_sqlite3.node",
       "./plugins/exec.js"
     ]

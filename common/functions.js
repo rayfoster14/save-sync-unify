@@ -1,4 +1,5 @@
-
+let fs = require('fs');
+let path = require('path');
 
 //This will only return ONLINE devices that are DISCOVERABLE
 let getMasterList = function(deviceList){
@@ -10,6 +11,13 @@ let getMasterList = function(deviceList){
     return cleanList
 }
 
+//If dir doesn't exist, create it
+let dirCreate = function(dir){
+    dir = path.join(process.cwd(), dir);
+    if(!fs.existsSync(dir))fs.mkdirSync(dir);
+}
+
 module.exports={
-    getMasterList
+    getMasterList,
+    dirCreate
 }
