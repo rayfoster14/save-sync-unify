@@ -1,4 +1,5 @@
 let apiPrefix = "/api";
+let htmlArea;
 
 let post = async function(url,obj){
     await fetch(url, {
@@ -18,6 +19,20 @@ writePrefChange = async function(e){
     });
 }
 
+let copyToTemp = async function(){
+    document.getElementById('copyToTempButton').innerHTML="";
+  
+    let loading = document.getElementById('loading');
+    loading.classList.remove('hidden');
+
+    let onlineObj = await (await fetch(apiPrefix+'/copyToTemp')).json();
+
+    loading.classList.add('hidden');
+
+    htmlArea.innerHTML=JSON.stringify(onlineObj)
+
+    
+}
 
 let render = async function(){
 
@@ -29,15 +44,18 @@ let render = async function(){
         return data = await (await fetch(apiPrefix+'/getPreferences')).json();
     }();
 
+
    
     let html ="";
     for(let i = 0; i < deviceList.length; i++){
         let device = deviceList[i];
         html +=`<br><input type="checkbox" onClick="writePrefChange(this)" device="${device.device}" id="${device.device}_pref" ${!device.online ? "disabled='true'" : '' } /> ${device.name} : ${device.online?'ONLINE':'UNAVAILABLE'}`
     }
-    let htmlArea = document.getElementById('content');
+    htmlArea = document.getElementById('content');
     htmlArea.innerHTML = html;
 
+    htmlArea.innerHTML += "<br><div id='copyToTempButton'><button onClick='copyToTemp()'>Copy To Temp</button></div>"
+    htmlArea.innerHTML += "<div id='loading' class='hidden'>LOADING... </div>";
 
 
     /** Check Marks Set up  */
@@ -58,10 +76,12 @@ let render = async function(){
                 checkElem.checked = true;
             }else{
                 let flag = devicePreferences[prefs.indexOf(deviceId)].discover;
+                console.log(flag);
                 checkElem.checked = flag === 1 ? true : false;
             }
         }
     }
+
 }
 
 render();

@@ -1,14 +1,68 @@
 let isReachable = require('is-reachable');
-let ftp = require('basic-ftp')
+let ftp = require('basic-ftp');
+let globby = require('glob');
+let fs = require('fs');
+
+
+let  newConnection = function () {
+    return new Promise(function (resolve, reject) {
+        var client = new ftp.Client();
+        client.ftp.verbose=false//true;
+        resolve(client)
+    });
+};
+
+
+let copyToTemp = async function(device){
+    device.fileList = {};
+
+    let client = await newConnection();
+
+    for(let i = 0; i < device.platformList.length; i++){
+        let k = device.platformList[i];
+        let searchPath = `${device.paths[k]}`;
+        let searchExts = device.extensionSearch[k];
+        let downloadDir = `./TEMP/${device.device}/${k}/DownloadDir`;
+        device.fileList[k] = [];
+
+        await client.access({
+            host: device.ftpAddress,
+            user: device.ftpUser,
+            password: device.ftpPW,
+            port: device.ftpPort
+        });
+        await client.cd(searchPath);
+        await client.downloadToDir(downloadDir);
+
+        let found = [];
+        for(let v = 0; v < searchExts.length; v++){
+            let list = await globby(`${downloadDir}/**/*.${searchExts[v]}`);
+            found = found.concat(list);
+        }
+
+        //Copy files to temp
+        for(let v = 0; v < found.length; v++){
+            let path = './'+found[v].replace(/\\/g, '/');
+            let rootPath = path.replace(downloadDir+'/', '');
+            
+            let extArr = rootPath.split('.');
+            let ext = extArr[extArr.length-1];
+
+            let tempPath = `./TEMP/${device.device}/${k}/${rootPath}`;
+            fs.cpSync(path, tempPath);
+            device.fileList[k].push({
+                temp: tempPath,
+                rootPath
+            });
+        }
+        fs.rmSync(downloadDir, {recursive:true});
+    }
+    await client.close();
+}
 
 module.exports={
-        newConnection: function () {
-            return new Promise(function (resolve, reject) {
-                var client = new ftp.Client();
-                client.ftp.verbose=true;
-                resolve(client)
-            });
-        },
+    copyToTemp,
+       
         onlineCheck : async function(device){
             let address = `ftp://${device.ftpAddress}:${device.ftpPort}`;
             return await isReachable(address);

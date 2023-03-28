@@ -34,6 +34,7 @@ let prepareFiles = async function(devices){
         let device = devices[i];
 
         //Set up folders
+        c.functions.dirRemove('./TEMP/'+device.device);
         c.functions.dirCreate('./TEMP/'+device.device);
         for(let e = 0; e < device.platformList.length; e++){
             let k = device.platformList[e];

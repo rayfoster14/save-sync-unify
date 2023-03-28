@@ -19,16 +19,29 @@ let run = function(){
     c.startup();
     let instance = fs.readFileSync('instance').toString();
 
-    let apiPrefix = "/api"
+    let devices, preferences, online, config
+
+    let apiPrefix = "/api";
+
+
+    let stringifyFunctions = function(devices){
+        for(let i = 0; i < devices.length; i++){
+            let funs = Object.keys(devices[i].functions);
+            for(let v = 0; v < funs.length; v++){
+                devices[i].functions[funs[v]] =  devices[i].functions[funs[v]] + "";
+            }
+        }
+        return devices;
+    }
 
     app.get(apiPrefix+'/getOnlineList', async function(request,response){
-        let config = await c.db.getConfig();
-        let online = await c.devices.getOnlineDevices(config, 'server');
-        response.send(online);
+        config = await c.db.getConfig();
+        devices = await c.devices.getOnlineDevices(config, 'server');
+        response.send(devices);
         response.end();
     })
     app.get(apiPrefix+'/getPreferences', async function(request,response){
-        let preferences = await c.db.getPreferences(instance);
+        preferences = await c.db.getPreferences(instance);
         response.send(preferences);
         response.end();
     })
@@ -36,7 +49,27 @@ let run = function(){
         let writeResponse = await c.db.writePreference(instance, request.body);
         response.send(JSON.stringify({writeResponse}));
         response.end()
+    });
+    app.get(apiPrefix+'/copyToTemp', async function(request, response){
+        config = await c.db.getConfig();
+        devices = await c.devices.getOnlineDevices(config, 'server');
+        preferences = await c.db.getPreferences(instance);
+        for(let i = 0; i < devices.length; i++){
+            let deviceId = devices[i].device;
+            for(let e = 0; e < preferences.length; e++){
+                let pref = preferences[e];
+                if(deviceId === pref.device){
+                    devices[i].discover = pref.discover === 1 && devices[i].online ? true : false;
+                }
+            }
+        }
+        online = c.functions.getMasterList(devices);
+        online = await c.devices.prepareFiles(online);
+        online = stringifyFunctions(online); //Required to parse function in API call
+        response.send(JSON.stringify(online));
+        response.end()
     })
+
 
     /**CONFIG PAGE**/
     app.get('/configData/getDevices',  async function(request,response){
@@ -61,7 +94,7 @@ let run = function(){
 
 
     app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
+    console.log(`Listening for port: ${port}`)
     })
 
 }

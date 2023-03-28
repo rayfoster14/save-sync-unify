@@ -60,9 +60,8 @@ let main = async function(){
         exitEdit = await editDiscovery(devices);
     }while(!exitEdit)
 
-    let online = c.functions.getMasterList(devices);
-    let files = await c.devices.prepareFiles(online);
-    console.log(files)
+    online = c.functions.getMasterList(devices);
+    online = await c.devices.prepareFiles(online);
 
 }
 

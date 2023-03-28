@@ -17,7 +17,14 @@ let dirCreate = function(dir){
     if(!fs.existsSync(dir))fs.mkdirSync(dir);
 }
 
+let dirRemove = function(dir){
+    dir = path.join(process.cwd(), dir);
+    if(fs.existsSync)fs.rmSync(dir, {recursive:true});
+
+}
+
 module.exports={
     getMasterList,
-    dirCreate
+    dirCreate,
+    dirRemove
 }
