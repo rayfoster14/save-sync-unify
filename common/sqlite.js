@@ -154,8 +154,24 @@ let writePreference = async function(instance, {device, discover}){
     }
 }
 
+let getPlatformNames = async function(){
+    return await get('SELECT * from platforms')
+}
+
+let getRepo = async function(){
+    return await get(`SELECT * FROM mapping`)
+}
+
+let newRepoRecord = async function(obj){
+    let toNew = objToNew(obj);
+    let query = `INSERT INTO mapping (${toNew.fields}) VALUES (${toNew.qs})`;
+    let response = await write(query, toNew.vals);
+    return response
+
+}
+
 let getSchema = function(){
     return tables;
 }
 
-module.exports={setup, getConfig, writeConfig, getPreferences, writePreference, getSchema}
+module.exports={setup, getConfig, writeConfig, getPreferences, writePreference, getSchema, getRepo, getPlatformNames, newRepoRecord}

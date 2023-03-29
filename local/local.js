@@ -5,7 +5,7 @@ let fs = require('fs');
 global.c = require('../common/common.js');
 let ui = require('./ui.js');
 
-let preferences, devices;
+let preferences, devices, repo;
 
 
 c.startup();
@@ -48,6 +48,69 @@ let listConfiguration = async function(devices,preferences){
     }
 }
 
+let addNewSave = async function(online,repo){
+
+    //Get platform list
+    let platform = "";
+    do{
+        let platformList = await c.functions.getOnlinePlatformList(online, true);
+        platform = await ui.select(platformList, 'Which platform?', undefined, true)
+
+        //Get Game Name
+        let game = "";
+        let newGameBool = undefined;
+        if(platform !== "" && platform){
+            do{
+                game = "";
+                newGameBool = await ui.bool('Is this a new Game?');
+                let filteredGameList = c.functions.getFilteredGameList(repo,platform);
+                game = newGameBool ?  await ui.text('New Game Name: ') :  await ui.select(filteredGameList, 'Which Game?', undefined, true);
+
+                //Get Device List that has the selected platform
+                let device = "";
+                if(game !== "" && game){
+                    do{
+                        device = ""
+                        let onlinePlatformDevices = c.functions.getFilteredOnlinePlatformDevices(online,platform)
+                        device = await ui.select(onlinePlatformDevices, 'Which device?', undefined, true);
+
+                        //Get a filelist for the device and platform
+                        let filePath = ""
+                        if(device !== "" && device){
+                            do{
+                                fileList = c.functions.getFilteredOnlinePlatformDeviceFileList(online, device, platform)
+                                filePath = await ui.select(fileList, 'Which file?', undefined, true);
+
+                                //Confirmation to continue
+                                let continueBool;
+                                if(filePath !== "" && filePath){
+                                        console.log(`We are going to add ${game} (${platform}) to the repo?${"\n"}Device: ${device}${"\n"}File: ${filePath} `);
+                                        continueBool = await ui.bool('Continue? ')
+                                        if(continueBool){
+                                            let createRes = await c.functions.addOrUpdateRepo(  {
+                                                platform,
+                                                game,
+                                                newGameBool,
+                                                device, 
+                                                path:filePath
+                                            }, repo );
+
+                                            console.log(createRes ? 'Added Successfully':'Something went wrong')
+                                          
+                                            platform = undefined;
+                                            game = undefined,
+                                            device = undefined,
+                                            filePath  = undefined;
+                                        }
+                                }
+                        }while(filePath)
+                        }
+                    }while(device)
+                }        
+            }while(game)
+        }
+    }while(platform)
+}
 
 let main = async function(){
 
@@ -62,6 +125,23 @@ let main = async function(){
 
     online = c.functions.getMasterList(devices);
     online = await c.devices.prepareFiles(online);
+    repo = await c.functions.getRepo();
+
+    let options =
+    [
+        "Sync",
+        "Add new Save",
+        "Quit"
+    ]
+    let quit;
+    do{
+        let choice = await ui.select(options, 'How to continue? ', 'index');
+        await [
+            undefined,
+            addNewSave.bind(undefined, online,repo),
+            function(){console.log('quitting');quit=true}
+        ][choice]();
+    }while(!quit)
 
 }
 

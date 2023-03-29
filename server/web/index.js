@@ -1,5 +1,6 @@
 let apiPrefix = "/api";
 let htmlArea;
+let onlineObj;
 
 let post = async function(url,obj){
     await fetch(url, {
@@ -25,16 +26,44 @@ let copyToTemp = async function(){
     let loading = document.getElementById('loading');
     loading.classList.remove('hidden');
 
-    let onlineObj = await (await fetch(apiPrefix+'/copyToTemp')).json();
+    onlineObj = await (await fetch(apiPrefix+'/copyToTemp')).json();
 
     loading.classList.add('hidden');
 
-    htmlArea.innerHTML=JSON.stringify(onlineObj)
+    renderFirstStep()
 
     
 }
 
-let render = async function(){
+let renderMenu = async function(){
+
+    let interface = `
+    <div id="menu">
+        <button id="addGame"" onClick="addNewGame()">Add New Game</button>
+    </div>
+
+    <div id="addNewGame" class="hidden">
+        Select Device
+        <select id="addGame_device"></select>
+        <br>
+        Select Platform
+        <select class="hidden" id="addGame_platform"></select>
+        <br>
+        Select File
+        <select class="hidden" id="addGame_file"></select>
+        <br>
+        Existing Game or New Game
+        <button class="hidden" id="addGame_existing">Existing</button>
+        <button class="hidden" id="addGame_NewGame">New Game</button>
+        <br>
+        <select class="hidden" id="newGame_existingList"></select>
+        <input class="hidden" id="newGame_newGameName" />
+    </div>
+    `
+    htmlArea.innerHTML = interface;
+}
+
+let renderFirstStep = async function(){
 
     let deviceList = await async function(){
         return data = await (await fetch(apiPrefix+'/getOnlineList')).json();
@@ -84,4 +113,4 @@ let render = async function(){
 
 }
 
-render();
+renderFirstStep();

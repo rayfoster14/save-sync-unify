@@ -45,7 +45,6 @@ let prepareFiles = async function(devices){
         device = await device.functions.copyToTemp(device);
     }
     return devices
-
 }
 
 
