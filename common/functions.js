@@ -88,9 +88,10 @@ let getFilteredOnlinePlatformDeviceFileList = function(online, device, platform)
 let makeDate = function(date){
     let d = date ?? new Date();
     let zeros = function(str){
+        str+="";
         return str.length === 1 ? '0'+str:str
     }
-    return `${d.getFullYear()}-${zeros(d.getMonth()+1)}-${zeros(d.getDate())} ${zeros(d.getHours())}:${zeros(d.getMinutes())}:${zeros(d.getSeconds())}}}`
+    return `${d.getFullYear()}-${zeros(d.getMonth()+1)}-${zeros(d.getDate())} ${zeros(d.getHours())}:${zeros(d.getMinutes())}:${zeros(d.getSeconds())}`
 }
 
 let addOrUpdateRepo = async function(writeData, repo){

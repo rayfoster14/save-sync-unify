@@ -19,17 +19,23 @@ let run = function(){
     c.startup();
     let instance = fs.readFileSync('instance').toString();
 
-    let devices, preferences, online, config
+
+    let devices, preferences, repo
+    let deviceFunctions={}
 
     let apiPrefix = "/api";
 
 
-    let stringifyFunctions = function(devices){
+    let storeFunctions = function(devices){
         for(let i = 0; i < devices.length; i++){
-            let funs = Object.keys(devices[i].functions);
-            for(let v = 0; v < funs.length; v++){
-                devices[i].functions[funs[v]] =  devices[i].functions[funs[v]] + "";
-            }
+            deviceFunctions[devices[i].device] = {};
+            deviceFunctions[devices[i].device] =  devices[i].functions
+        }
+        return devices;
+    }
+    let repackFunctions = function(devices){
+        for(let i = 0; i < devices.length; i++){
+            devices[i].functions = deviceFunctions[devices[i].device];
         }
         return devices;
     }
@@ -65,10 +71,51 @@ let run = function(){
         }
         online = c.functions.getMasterList(devices);
         online = await c.devices.prepareFiles(online);
-        online = stringifyFunctions(online); //Required to parse function in API call
+        online = storeFunctions(online); //Required to parse function in API call
+        console.log('Finished Copying from temp')
         response.send(JSON.stringify(online));
         response.end()
-    })
+    });
+
+    app.post(apiPrefix+'/getOnlinePlatformList', async function(request, response){
+        if(request.body) {
+            let online = repackFunctions(request.body.online)
+            let platformList = await c.functions.getOnlinePlatformList(online, true);
+            response.send(JSON.stringify(platformList));
+            response.end()
+        }
+    });
+    app.post(apiPrefix+'/getFilteredGameList', async function(request, response){
+        if(request.body) {
+            repo = await c.functions.getRepo();
+            let filteredGameList = c.functions.getFilteredGameList(repo,request.body.platform);
+            response.send(JSON.stringify(filteredGameList));
+            response.end()
+        }
+    });
+    app.post(apiPrefix+'/getFilteredOnlinePlatformDevices', async function(request, response){
+        if(request.body) {
+            let onlinePlatformDevices = c.functions.getFilteredOnlinePlatformDevices(request.body.online,request.body.platform)
+            console.log(onlinePlatformDevices, request.body)
+            response.send(JSON.stringify(onlinePlatformDevices));
+            response.end()
+        }
+    });
+    app.post(apiPrefix+'/getFilteredOnlinePlatformDeviceFileList', async function(request, response){
+        if(request.body) {
+            let fileList = c.functions.getFilteredOnlinePlatformDeviceFileList(request.body.online, request.body.device, request.body.platform)
+            response.send(JSON.stringify(fileList));
+            response.end()
+        }
+    });
+    app.post(apiPrefix+'/addOrUpdateRepo', async function(request, response){
+        if(request.body) {
+            let createRes = await c.functions.addOrUpdateRepo( request.body, repo );
+            response.send(createRes);
+            response.end()
+        }
+    });
+    
 
 
     /**CONFIG PAGE**/
