@@ -10,8 +10,6 @@ module.exports = async function(){
     }else{
         if(!fs.existsSync(process.env.REPO_PATH))fs.mkdirSync(process.env.REPO_PATH)
     }
-    if(!fs.existsSync('./TEMP'))fs.mkdirSync('./TEMP');
-
 
     //Makes runtime identity
     let identifierPath = pth.join(process.cwd(), 'instance');

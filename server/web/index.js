@@ -43,7 +43,7 @@ let createDropdownSelects = function(arr){
     return select
 }
 
-let deviceNewGameElem, platformNewGameElem, fileNewGameElem,existingRepoElem,newGameTextBtn,newGameSelectBtn, createNew, newGameNameElem,newGameSubmitBtn
+let deviceNewGameElem, platformNewGameElem, fileNewGameElem,existingRepoElem,newGameTextBtn,newGameSelectBtn, createNew, newGameNameElem,newGameSubmitBtn, syncGamePlatformElem, syncGameExistingElem
 let addNewGame = async function(){
     let newGameAreaElem = document.getElementById('addNewGame');
     let platformList = await post(apiPrefix+'/getOnlinePlatformList', {online:onlineObj}, true);
@@ -126,6 +126,21 @@ let returnToMenu = function(){
     document.getElementById('menu').classList.remove('hidden');
 }
 
+let syncGame = async function(){
+    document.getElementById('syncGame').classList.remove('syncGame');
+}
+let syncGameSetPlatform = async function(){
+    let platform = platformNewGameElem.value;
+    if(platform !== ""){
+        let deviceList = await post(apiPrefix+'/getFilteredOnlinePlatformDevices', {online:onlineObj, platform}, true)
+        let select = createDropdownSelects(deviceList);
+        deviceNewGameElem.classList.remove('hidden');
+        deviceNewGameElem.innerHTML = select;
+    }
+}
+let syncGameSetGame  = async function(){
+
+}
 
  
 
@@ -134,6 +149,8 @@ let renderMenu = async function(){
     let interface = `
     <div id="menu">
         <button id="addGame"" onClick="addNewGame()">Add New Game</button>
+        <button id="syncGame"" onClick="syncGame()">Sync a Game</button>
+        
     </div>
 
     <div id="addNewGame" class="hidden">
@@ -155,6 +172,16 @@ let renderMenu = async function(){
         <br>
         <button class="hidden" id="newGame_submit" onClick="newGameSubmit()">SUBMIT</button>
     </div>
+
+    <div id="syncGame" class="hidden">
+        Select Platform
+        <select onChange="syncGameSetPlatform()" id="syncGame_platform"></select>
+        <br>
+        Select Game
+        <select class="hidden" onChange="syncGameSetGame()" id="syncGame_existingList"></select>
+
+    </div>
+
     <div id="successScreen"class="hidden">
         <h2 id="successMessage"></h2>
         <button id="return" onClick="returnToMenu()">Return To Menu</button>
@@ -169,6 +196,8 @@ let renderMenu = async function(){
     newGameTextBtn = document.getElementById('addGame_existing');
     newGameSelectBtn = document.getElementById('addGame_NewGame');
     newGameSubmitBtn = document.getElementById('newGame_submit');
+    syncGameExistingElem = document.getElementById('syncGame_existingList');
+    syncGamePlatformElem = document.getElementById('syncGame_platform');
 
 }
 

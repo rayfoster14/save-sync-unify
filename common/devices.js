@@ -30,11 +30,13 @@ let getOnlineDevices = async function(config, mode){
 
 //Preps folders and copy files from device to temp
 let prepareFiles = async function(devices){
+    c.functions.dirRemove('./TEMP/');
+    c.functions.dirCreate('./TEMP');
+    
     for(let i = 0; i < devices.length; i++){
         let device = devices[i];
 
         //Set up folders
-        c.functions.dirRemove('./TEMP/'+device.device);
         c.functions.dirCreate('./TEMP/'+device.device);
         for(let e = 0; e < device.platformList.length; e++){
             let k = device.platformList[e];

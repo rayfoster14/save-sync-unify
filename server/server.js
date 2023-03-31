@@ -115,6 +115,23 @@ let run = function(){
             response.end()
         }
     });
+
+    app.post(apiPrefix+'/getRepoStatInfo', async function(request,response){
+        if(request.body){
+            let repo = await c.functions.getRepo();
+            let repoEntry = repo[request.body.platform][request.body.game]
+            let repoData = await  c.functions.getSaveStats(repoEntry)
+            response.send(JSON.stringify(repoData));
+            response.end()
+        }
+    });
+    app.post(apiPrefix+'syncTheSave', async function(request, response){
+        if(request.body){
+            let response = await c.functions.syncTheSave(request.body.latest,request.body.pushList);
+            response.send(JSON.stringify(response));
+            response.end();
+        }
+    })
     
 
 

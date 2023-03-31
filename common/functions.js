@@ -1,5 +1,6 @@
 let fs = require('fs');
 let path = require('path');
+let CRC32 = require('crc-32');
 
 //This will only return ONLINE devices that are DISCOVERABLE
 let getMasterList = function(deviceList){
@@ -18,11 +19,7 @@ let getRepo = async function(){
         let entry = initlist[i];
         repoList[entry.platform] ??= {};
         repoList[entry.platform][entry.game] ??= [];
-        repoList[entry.platform][entry.game].push({
-            device:entry.device,
-            path:entry.path,
-            lastDate: entry.lastDate
-        });
+        repoList[entry.platform][entry.game].push(entry);
     }
     return repoList;
 }
@@ -85,13 +82,18 @@ let getFilteredOnlinePlatformDeviceFileList = function(online, device, platform)
     return deviceObj.fileList[platform].map(function(x){return x.rootPath});
 }
 
+let zeros = function(str){
+    str+="";
+    return str.length === 1 ? '0'+str:str
+}
 let makeDate = function(date){
     let d = date ?? new Date();
-    let zeros = function(str){
-        str+="";
-        return str.length === 1 ? '0'+str:str
-    }
     return `${d.getFullYear()}-${zeros(d.getMonth()+1)}-${zeros(d.getDate())} ${zeros(d.getHours())}:${zeros(d.getMinutes())}:${zeros(d.getSeconds())}`
+}
+let niceDate = function(date, incTime){
+    if(typeof(date)==="string") date = new Date(date);
+    let d = date;
+    return`${zeros(d.getDate())}/${zeros(d.getMonth()+1)}/${d.getFullYear()} ${incTime?`${zeros(d.getHours())}:${zeros(d.getMinutes())}:${zeros(d.getSeconds())}`:""}`
 }
 
 let addOrUpdateRepo = async function(writeData, repo){
@@ -124,6 +126,50 @@ let addOrUpdateRepo = async function(writeData, repo){
     return result;
 }
 
+
+
+let getSaveStats = async function(entries){
+    let config = await c.db.getConfig();
+    for(let i = 0; i < entries.length; i++){
+
+        let entry = entries[i];
+        let root = entry.device === 'repo' ? process.env.REPO_PATH: `./TEMP/${entry.device}/${entry.platform}/`;
+        let path = `${root}${entry.path}`;
+        if(fs.existsSync(path)){
+            entry.sessionPath = path;
+            entry.present = true;
+            let file = fs.readFileSync(path);
+            entry.crc32 = await CRC32.buf(file,0).toString(16).toUpperCase();
+            if(entry.crc32[0] === '-') entry.crc32 = entry.crc32.slice(1, entry.crc32.length)
+            let stats = fs.statSync(path);
+            entry.birthTime = stats.birthtime;
+            entry.modifiedTime = stats.mtime;
+            entry.size = stats.size;
+        }
+
+        
+        if(entry.device === 'repo'){
+            entry.deviceName = 'Repository';
+            continue;
+        }
+        for(let e = 0 ; e<config.length; e++){
+            let device = config[e];
+            if(entry.device === device.device){
+                entry.deviceName = device.name;
+            }
+        }
+    }
+    return entries;
+}
+
+let syncTheSave = async function(latest, pushList){
+    console.log('LATEST')
+    console.log(latest)
+    console.log('PUSH LIST')
+    console.log(pushList)
+}
+
+
 module.exports={
     getMasterList,
     getRepo,
@@ -133,5 +179,8 @@ module.exports={
     getFilteredGameList,
     getFilteredOnlinePlatformDevices,
     getFilteredOnlinePlatformDeviceFileList,
-    addOrUpdateRepo
+    addOrUpdateRepo,
+    getSaveStats,
+    niceDate,
+    syncTheSave
 }

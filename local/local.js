@@ -1,5 +1,5 @@
 let run = function(){
-
+require('colors')
 require('dotenv').config();
 let fs = require('fs');
 global.c = require('../common/common.js');
@@ -112,6 +112,80 @@ let addNewSave = async function(online,repo){
     }while(platform)
 }
 
+let syncASave = async function(online){
+
+    let repo = await c.functions.getRepo();
+    
+    //Get platform list
+    let platform = "";
+    do{
+        let platformList = await c.functions.getOnlinePlatformList(online, true);
+        platform = await ui.select(platformList, 'Which platform?', undefined, true)
+
+        //Get Game Name
+        let game = "";
+        if(platform !== "" && platform){
+            do{
+                game = "";
+                let filteredGameList = c.functions.getFilteredGameList(repo,platform);
+                game = await ui.select(filteredGameList, 'Which Game?', undefined, true);
+
+                if(game !== "" && game){
+                    let repoEntry = repo[platform][game]
+                    let repoData = await  c.functions.getSaveStats(repoEntry)
+                    let available = []
+
+                    let nd = c.functions.niceDate;
+                    console.log(`S A V E   S Y N C   I N   A C T I O N`)
+                    console.log(`Game: ${game}`);
+                    console.log(`Platform: ${platform}`);
+                    for(let i = 0; i < repoData.length; i++) {
+                        console.log('----')
+                        let entry = repoData[i];
+                        console.log(`Device: ${entry.deviceName}`)
+                        if(entry.lastCopiedTo!==""&&entry.lastCopiedTo)console.log(`Last Time Copied to: ${nd(entry.lastCopiedTo, true)} `)
+                        if(entry.lastCopiedFrom!==""&&entry.lastCopiedFrom)console.log(`Last Time Copied from: ${nd(entry.lastCopiedFrom, true)}`)
+                        if(entry.present){
+                            available.push(entry)
+                            console.log('Status: AVAILABLE')
+                            console.log(`Modified Time: ${nd(entry.modifiedTime,true)}`)
+                            console.log(`Checksum: ${entry.crc32}`)
+                        }else{
+                            console.log('Status: UNAVAILABLE')
+                        }
+                        console.log('');
+                    }
+                    let availableDevices = available.map(function(x){
+                        return {value:x.device, text:x.deviceName}
+                    });
+                    let deviceSource = await ui.select(availableDevices, 'Which device has the latest save data?', undefined, true);
+                    if(deviceSource!==""){
+                        let latestRepo;
+                        let pushToList = [];
+                        for(let i = 0; i < available.length; i++){
+                            if(available[i].device === deviceSource){
+                                latestRepo = available[i]
+                            }else{
+                                pushToList.push(available[i]);
+                            }
+                        }
+                        console.log(`Copying the save from ${latestRepo.deviceName.green} to:`)
+
+                        for(let u = 0; u < pushToList.length; u++){
+                            console.log(`${pushToList[u].deviceName.blue}`)
+                        }
+
+                        let syncContinue = await ui.bool('Continue with this operation? ');
+                        if(syncContinue){
+                            let res = await c.functions.syncTheSave(latestRepo, pushToList)
+                        }
+                    }
+                }        
+            }while(game)
+        }
+    }while(platform)
+}
+
 let main = async function(){
 
     let config = await c.db.getConfig();
@@ -137,7 +211,7 @@ let main = async function(){
     do{
         let choice = await ui.select(options, 'How to continue? ', 'index');
         await [
-            undefined,
+            syncASave.bind(undefined, online, repo),
             addNewSave.bind(undefined, online,repo),
             function(){console.log('quitting');quit=true}
         ][choice]();
