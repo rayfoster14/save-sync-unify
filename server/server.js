@@ -125,10 +125,20 @@ let run = function(){
             response.end()
         }
     });
-    app.post(apiPrefix+'syncTheSave', async function(request, response){
+    app.post(apiPrefix+'/syncTheSave', async function(request, response){
         if(request.body){
-            let response = await c.functions.syncTheSave(request.body.latest,request.body.pushList);
-            response.send(JSON.stringify(response));
+            let res = await c.functions.syncTheSave(request.body.latest,request.body.pushList);
+            res = {
+                successful: true
+            }
+            response.send(JSON.stringify(res));
+            response.end();
+        }
+    })
+    app.post(apiPrefix+'/nd', async function(request, response){
+        if(request.body){
+            let time = c.functions.niceDate(request.body.d, request.body.time)
+            response.send(time);
             response.end();
         }
     })

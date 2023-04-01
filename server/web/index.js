@@ -43,7 +43,10 @@ let createDropdownSelects = function(arr){
     return select
 }
 
-let deviceNewGameElem, platformNewGameElem, fileNewGameElem,existingRepoElem,newGameTextBtn,newGameSelectBtn, createNew, newGameNameElem,newGameSubmitBtn, syncGamePlatformElem, syncGameExistingElem
+let deviceNewGameElem, platformNewGameElem, fileNewGameElem,existingRepoElem,newGameTextBtn,newGameSelectBtn, createNew, newGameNameElem,newGameSubmitBtn, syncGamePlatformElem, syncGameExistingElem, syncGameStartElem, syncGameInfoElem, syncGameDeviceElem,syncGameSyncInfoElem
+
+let latestRepo, pushToList, available
+
 let addNewGame = async function(){
     let newGameAreaElem = document.getElementById('addNewGame');
     let platformList = await post(apiPrefix+'/getOnlinePlatformList', {online:onlineObj}, true);
@@ -127,29 +130,98 @@ let returnToMenu = function(){
 }
 
 let syncGame = async function(){
-    document.getElementById('syncGame').classList.remove('syncGame');
+    let syncArea = document.getElementById('syncGame')
+    console.log(syncArea)
+    syncArea.classList.remove('hidden');
+    let platformList = await post(apiPrefix+'/getOnlinePlatformList', {online:onlineObj}, true)
+    let select = createDropdownSelects(platformList);
+    syncGamePlatformElem.classList.remove('hidden');
+    syncGamePlatformElem.innerHTML = select;
+
 }
 let syncGameSetPlatform = async function(){
-    let platform = platformNewGameElem.value;
+    let platform = syncGamePlatformElem.value;
     if(platform !== ""){
-        let deviceList = await post(apiPrefix+'/getFilteredOnlinePlatformDevices', {online:onlineObj, platform}, true)
-        let select = createDropdownSelects(deviceList);
-        deviceNewGameElem.classList.remove('hidden');
-        deviceNewGameElem.innerHTML = select;
+        let gameList = await post(apiPrefix+'/getFilteredGameList', {platform}, true)
+        let select = createDropdownSelects(gameList);
+        syncGameExistingElem.classList.remove('hidden');
+        syncGameExistingElem.innerHTML = select;
     }
 }
 let syncGameSetGame  = async function(){
-
+    let game = syncGameExistingElem.value;
+    let platform = syncGamePlatformElem.value;
+    if(game !== ""){
+        let repoData = await post(apiPrefix+'/getRepoStatInfo',{platform,game}, true);
+        console.log(repoData)
+        
+        let nd = async function(d,time){
+            return await post(apiPrefix+'/nd',{d,time});
+        }
+        let infoStr = "";
+        available = [];
+        for(let i = 0; i < repoData.length; i++){
+            infoStr += "<br>"+('----')
+            let entry = repoData[i];
+            infoStr += "<br>"+(`Device: ${entry.deviceName}`)
+            if(entry.lastCopiedTo!==""&&entry.lastCopiedTo)infoStr += "<br>"+(`Last Time Copied to: ${await nd(entry.lastCopiedTo, true)} `)
+            if(entry.lastCopiedFrom!==""&&entry.lastCopiedFrom)infoStr += "<br>"+(`Last Time Copied from: ${await nd(entry.lastCopiedFrom, true)}`)
+            if(entry.present){
+                available.push(entry)
+                infoStr += "<br>"+('Status: AVAILABLE')
+                infoStr += "<br>"+(`Modified Time: ${await nd(entry.modifiedTime,true)}`)
+                infoStr += "<br>"+(`Checksum: ${entry.crc32}`)
+            }else{
+                infoStr += "<br>"+('Status: UNAVAILABLE')
+            }
+            infoStr += "<br>"+('');
+        }
+        let availableDevices = available.map(function(x){
+            return {value:x.device, text:x.deviceName}
+        });
+        let select = createDropdownSelects(availableDevices);
+        syncGameDeviceElem.classList.remove('hidden');
+        syncGameDeviceElem.innerHTML = select;
+        syncGameInfoElem.classList.remove('hidden');
+        syncGameInfoElem.innerHTML = infoStr;
+    }
 }
+let syncGameSetDevice = async function(){
+    let device = syncGameDeviceElem.value;
+    if(device!==""){
+        latestRepo;
+        pushToList = [];
+        for(let i = 0; i < available.length; i++){
+            if(available[i].device === device){
+                latestRepo = available[i]
+            }else{
+                pushToList.push(available[i]);
+            }
+        }
+        let htmlStr = `Copying the save from ${latestRepo.deviceName} to:`
 
- 
+        for(let u = 0; u < pushToList.length; u++){
+            htmlStr+=('\n'+`${pushToList[u].deviceName}`)
+        }
+        syncGameSyncInfoElem.innerHTML = htmlStr;
+        syncGameSyncInfoElem.classList.remove('hidden');
+        syncGameStartElem.classList.remove('hidden');
+    }
+}
+let syncGameStart = async function(){
+    let res = await post(apiPrefix+'/syncTheSave', {
+        latest: latestRepo,
+        pushList: pushToList
+    }, true);
+    console.log(res)
+}
 
 let renderMenu = async function(){
 
     let interface = `
     <div id="menu">
         <button id="addGame"" onClick="addNewGame()">Add New Game</button>
-        <button id="syncGame"" onClick="syncGame()">Sync a Game</button>
+        <button id="syncGameBtn" onClick="syncGame()">Sync a Game</button>
         
     </div>
 
@@ -179,6 +251,13 @@ let renderMenu = async function(){
         <br>
         Select Game
         <select class="hidden" onChange="syncGameSetGame()" id="syncGame_existingList"></select>
+        <br>
+        <div id="syncGame_info" class="hidden"></div>
+        Select Latest Device
+        <select class="hidden" onChange="syncGameSetDevice()" id="syncGame_device"></select>
+        <br>
+        <div id="syncGame_syncInfo" class="hidden"></div>
+        <button id="syncGame_start" onClick="syncGameStart()" class="hidden">Sync</button>
 
     </div>
 
@@ -198,6 +277,10 @@ let renderMenu = async function(){
     newGameSubmitBtn = document.getElementById('newGame_submit');
     syncGameExistingElem = document.getElementById('syncGame_existingList');
     syncGamePlatformElem = document.getElementById('syncGame_platform');
+    syncGameDeviceElem = document.getElementById('syncGame_device');
+    syncGameInfoElem = document.getElementById('syncGame_info');
+    syncGameStartElem = document.getElementById('syncGame_start');
+    syncGameSyncInfoElem = document.getElementById('syncGame_syncInfo');
 
 }
 
