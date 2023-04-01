@@ -167,11 +167,24 @@ let newRepoRecord = async function(obj){
     let query = `INSERT INTO mapping (${toNew.fields}) VALUES (${toNew.qs})`;
     let response = await write(query, toNew.vals);
     return response
+}
 
+let updateRepoCopiedFrom = async function(id){
+    let date = c.functions.makeDate()
+    let query = `UPDATE mapping SET lastCopiedFrom = "${date}" WHERE id = ?`;
+    response = await write(query, [id])
+    return date;
+}
+
+let updateRepoCopiedTo = async function(id){
+    let date = c.functions.makeDate()
+    let query = `UPDATE mapping SET lastCopiedTo = "${date}" WHERE id = ?`;
+    response = await write(query, [id])
+    return date;
 }
 
 let getSchema = function(){
     return tables;
 }
 
-module.exports={setup, getConfig, writeConfig, getPreferences, writePreference, getSchema, getRepo, getPlatformNames, newRepoRecord}
+module.exports={setup, getConfig, writeConfig, getPreferences, writePreference, getSchema, getRepo, getPlatformNames, newRepoRecord, updateRepoCopiedFrom, updateRepoCopiedTo}

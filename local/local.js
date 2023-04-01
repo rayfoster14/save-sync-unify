@@ -177,7 +177,7 @@ let syncASave = async function(online){
 
                         let syncContinue = await ui.bool('Continue with this operation? ');
                         if(syncContinue){
-                            let res = await c.functions.syncTheSave(latestRepo, pushToList)
+                            let res = await c.devices.syncTheSave(latestRepo, pushToList, online)
                         }
                     }
                 }        
@@ -191,12 +191,10 @@ let main = async function(){
     let config = await c.db.getConfig();
     devices = await c.devices.getOnlineDevices(config, 'local');
     preferences = await c.db.getPreferences(instance);
-
     do{
         await listConfiguration(devices,preferences);
         exitEdit = await editDiscovery(devices);
     }while(!exitEdit)
-
     online = c.functions.getMasterList(devices);
     online = await c.devices.prepareFiles(online);
     repo = await c.functions.getRepo();

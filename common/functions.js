@@ -162,12 +162,6 @@ let getSaveStats = async function(entries){
     return entries;
 }
 
-let syncTheSave = async function(latest, pushList){
-    console.log('LATEST')
-    console.log(latest)
-    console.log('PUSH LIST')
-    console.log(pushList)
-}
 
 
 module.exports={
@@ -182,5 +176,5 @@ module.exports={
     addOrUpdateRepo,
     getSaveStats,
     niceDate,
-    syncTheSave
+    makeDate
 }

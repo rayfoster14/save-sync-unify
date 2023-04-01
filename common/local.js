@@ -16,43 +16,48 @@ let getDriveDir = function(mountDir, dir){
     }
 };
 
-let getFileList = function(dir){
+let copyToTemp = async function(device, k){    
 
+    let searchPath = `${device.basePath}/${device.paths[k]}`;
+    let searchExts = device.extensionSearch[k];
+    device.fileList[k] = [];
+
+    //Searches through FS for files with the correct extension
+    let found = [];
+    for(let v = 0; v < searchExts.length; v++){
+        let list = await globby(`${searchPath}/**/*.${searchExts[v]}`);
+        found = found.concat(list);
+    }
+
+    //Copy files to temp
+    for(let v = 0; v < found.length; v++){
+        let path = found[v].replace(/\\/g, '/');
+        let rootPath = path.replace(searchPath+'/', '');
+        
+        let tempPath = `./TEMP/${device.device}/${k}/${rootPath}`;
+        fs.cpSync(path, tempPath);
+
+        device.fileList[k].push({
+            temp: tempPath,
+            rootPath
+        });
+    }
+        
+    return device;
 }
 
-let copyToTemp = async function(device){
-    device.fileList = {};
+let copyFromTemp = function(device, destination){
+
+    let copyToPath = `${device.basePath}/${device.paths[destination.platform]}/${destination.path}`;
+    copyToPath = copyToPath.slice(0,copyToPath.length-3) //REMOVES NEW STR ON COPIED FILE
+    let copyFromPath = destination.newSave;
+
+    let date = c.functions.makeDate()
+    fs.copyFileSync(copyToPath, `./TRACE/${destination.platform}/${destination.game}_${date}_${destination.deviceName}`)
+    fs.copyFileSync(copyFromPath, copyToPath)
     
-    for(let i = 0; i < device.platformList.length; i++){
+    return fs.existsSync(copyToPath);
 
-        let k = device.platformList[i];
-        let searchPath = `${device.basePath}/${device.paths[k]}`;
-        let searchExts = device.extensionSearch[k];
-        device.fileList[k] = [];
-
-
-        //Searches through FS for files with the correct extension
-        let found = [];
-        for(let v = 0; v < searchExts.length; v++){
-            let list = await globby(`${searchPath}/**/*.${searchExts[v]}`);
-            found = found.concat(list);
-        }
-
-        //Copy files to temp
-        for(let v = 0; v < found.length; v++){
-            let path = found[v].replace(/\\/g, '/');
-            let rootPath = path.replace(searchPath+'/', '');
-            
-            let tempPath = `./TEMP/${device.device}/${k}/${rootPath}`;
-            fs.cpSync(path, tempPath);
-
-            device.fileList[k].push({
-                temp: tempPath,
-                rootPath
-            });
-        }
-    }
-    return device;
 }
 
 
@@ -85,5 +90,6 @@ module.exports={
             return false;
         }
     },
-    copyToTemp
+    copyToTemp,
+    copyFromTemp
 }
