@@ -12,39 +12,47 @@ let  newConnection = function () {
     });
 };
 
+//Checks URL and returns if it's alive or not
+let onlineCheck = async function(device){
+    let address = `ftp://${device.ftpAddress}:${device.ftpPort}`;
+    return await isReachable(address);
+};
+
 
 let copyToTemp = async function(device, k){
-
-    let client = await newConnection();
-
+    //Define Paths for transfer
     let searchPath = `${device.paths[k]}`;
     let searchExts = device.extensionSearch[k];
     let downloadDir = `./TEMP/${device.device}/${k}/DownloadDir`;
     device.fileList[k] = [];
 
+    //Create FTP Client
+    let client = await newConnection();
     await client.access({
         host: device.ftpAddress,
         user: device.ftpUser,
         password: device.ftpPW,
         port: device.ftpPort
     });
+
+    //Navigate to FTP directory
     await client.cd(searchPath);
+
+    //Download contents of directory to temp download directory
     await client.downloadToDir(downloadDir);
 
+    //Search the download folder with files that match file extension
     let found = [];
     for(let v = 0; v < searchExts.length; v++){
         let list = await globby(`${downloadDir}/**/*.${searchExts[v]}`);
         found = found.concat(list);
     }
 
-    //Copy files to temp
+    //Copy matching files out of download folder and into root temp directory
     for(let v = 0; v < found.length; v++){
         let path = './'+found[v].replace(/\\/g, '/');
         let rootPath = path.replace(downloadDir+'/', '');
         
-        let extArr = rootPath.split('.');
-        let ext = extArr[extArr.length-1];
-
         let tempPath = `./TEMP/${device.device}/${k}/${rootPath}`;
         fs.cpSync(path, tempPath);
         device.fileList[k].push({
@@ -52,119 +60,50 @@ let copyToTemp = async function(device, k){
             rootPath
         });
     }
+
+    //Delete download directory
     fs.rmSync(downloadDir, {recursive:true});
     
     await client.close();
+    return device
+}
+
+let copyFromTemp = async function(device, destination){
+    let sucess;
+    try{
+        //Local File
+        let copyFromPath = destination.newSave;
+
+        //FTP File to be overwritten
+        let deviceDir = device.paths[destination.platform]
+        let deviceFile = destination.path
+
+        //FTP Client Create
+        let client = await newConnection();
+        await client.access({
+            host: device.ftpAddress,
+            user: device.ftpUser,
+            password: device.ftpPW,
+            port: device.ftpPort
+        });
+
+        //Navigate to ftp directory
+        await client.cd(deviceDir);
+
+        //Copy file from temp directory to ftp directory
+        let result = await client.uploadFrom(copyFromPath, deviceFile);
+
+        //If result.code === 226 (successful) return true
+        success= result.code === 226 ? true : false
+    }catch(e){
+        console.log(e)
+        return false;
+    }
+    return sucess
 }
 
 module.exports={
     copyToTemp,
-       
-        onlineCheck : async function(device){
-            let address = `ftp://${device.ftpAddress}:${device.ftpPort}`;
-            return await isReachable(address);
-        },
-        getDirList: async function (client, config, dir) {
-            return new Promise(async function (resolve, reject) {
-                try {
-                    await client.access(config)
-                    await client.cd(dir);
-                    var list = await client.list();
-                    client.close();
-                    resolve(list)
-                } catch (err) {
-                    client.close();
-                    resolve(false)
-                }
-
-            })
-        },
-        downloadFiles: async function (client, config, files, ftpDir, localDir, modBool, closeBool) {
-            
-            // Requires a root dir (ftpDir) and requires
-            // an array of files path strings (or dir to
-            // files from root dir (files).
-
-            return new Promise(async function (resolve, reject) {
-                try {
-                    await client.access(config);
-                    for (var u = 0; u < files.length; u++) {
-
-                        let thisSaveDir = ftpDir;
-                        let file = files[u];
-
-                        //If file has more DIRs in path... let's add them to the ftp path
-                        if(file.split('/').length > 1){
-                            let dirList = file.split('/')
-                            file = dirList.pop();
-                            for(let x = 0; x < dirList.length; x++){
-                                if(dirList[x] !== '') thisSaveDir += `/${dirList[x]}`
-                            }
-                        }
-
-                        await client.cd(thisSaveDir)
-
-                        await client.downloadTo(localDir + '/' + file, file);
-                        if(!modBool){
-                            var lastMod =await client.lastMod(file);
-                            fs.utimesSync(localDir + '/' + file, lastMod, lastMod)
-                        }
-                    }
-                    client.close()
-                    resolve(true)
-                } catch (err) {
-                    client.close()
-                    resolve(false)
-                }
-            });
-        },
-        downloadOneFile: async function (client, config, file, ftpDir, localDir, modBool, closeBool) {
-       
-            return new Promise(async function (resolve, reject) {
-                try {
-                    await client.access(config);
-
-                    let thisSaveDir = ftpDir;
-
-                    //If file has more DIRs in path... let's add them to the ftp path
-                    if(file.split('/').length > 1){
-                        let dirList = file.split('/')
-                        file = dirList.pop();
-                        for(let x = 0; x < dirList.length; x++){
-                            if(dirList[x] !== '') thisSaveDir += `/${dirList[x]}`
-                        }
-                    }
-
-                    await client.cd(thisSaveDir)
-
-                    await client.downloadTo(localDir + '/' + file, file);
-                    if(!modBool){
-                        var lastMod =await client.lastMod(file);
-                        fs.utimesSync(localDir + '/' + file, lastMod, lastMod)
-                    }
-                    
-                    client.close()
-                    resolve(true)
-                } catch (err) {
-                    client.close()
-                    resolve(false)
-                }
-            });
-        },
-        
-        uploadFile: async function(client, config, ftpFile, ftpDir, localFile){
-            return new Promise(async function(resolve,reject){
-                try{
-                    await client.access(config);
-                    await client.cd(ftpDir);
-                    await client.uploadFrom(localFile, ftpFile);
-                    client.close();
-                    resolve(true);
-                }catch(err){
-                    client.close();
-                    resolve(false)
-                }
-            })
-        }
-    
+    copyFromTemp,
+    onlineCheck
 }

@@ -25,8 +25,10 @@ let getOnlineDevices = async function(config, mode){
 
 //Preps folders and copy files from device to temp
 let prepareFiles = async function(devices){
-    c.functions.dirRemove('./TEMP/');
+    c.functions.dirRemove('./TEMP');
     c.functions.dirCreate('./TEMP');
+
+    c.functions.dirCreate('./TRACE')
 
     for(let i = 0; i < devices.length; i++){
         let device = devices[i];
@@ -36,10 +38,12 @@ let prepareFiles = async function(devices){
         for(let e = 0; e < device.platformList.length; e++){
             let k = device.platformList[e];
             c.functions.dirCreate(`./TEMP/${device.device}/${k}`);
-            c.functions.dirCreate(`${process.env.REPO_PATH}/${k}`)
+            c.functions.dirCreate(`${process.env.REPO_PATH}/${k}`);
+            c.functions.dirCreate(`./TRACE/${k}`)
         }
 
         device.fileList = {};
+        console.log(device)
         for(let i = 0; i < device.platformList.length; i++){
             let k = device.platformList[i];
             if(device.pluginFunctions && device.pluginFunctions.copyToTemp && device.pluginFunctions.copyToTemp[k]){
@@ -53,25 +57,34 @@ let prepareFiles = async function(devices){
 }
 
 let syncTheSave = async function(source, pushList, online){
+    let success = []
+
+    //Update copied from repo date
     await c.db.updateRepoCopiedFrom(source.id);
 
     // Copy latest save to temp directories
     for(let i = 0; i < pushList.length; i++){
         let destination = pushList[i];
 
-        let destinationPath
+        //Copy file to destination temp directory (or repo)
         if(destination.device === 'repo'){
-            destinationPath = (source.sessionPath, `${process.env.REPO_PATH}${destination.path}`)
+            destination.newSave =  `${process.env.REPO_PATH}${destination.path}`
         }else{
-            destinationPath = (source.sessionPath, destination.sessionPath + 'NEW')
+            destination.newSave =  destination.sessionPath + 'NEW'
         }
-        fs.copyFileSync(source.sessionPath, destinationPath);
-        destination.newSave = destinationPath;
+        fs.copyFileSync(source.sessionPath, destination.newSave);
 
-        await c.db.updateRepoCopiedTo(destination.id);
+        //If we're a repo... then that's it!
+        if(destination.device === 'repo'){
+            await c.db.updateRepoCopiedTo(destination.id);
+            continue;
+        } 
 
-        if(destination.device === 'repo') continue;
+        //Create a backup trace file of file we are replacing
+        let date = c.functions.makeDate().replace(/:/g, '.')
+        fs.copyFileSync(destination.sessionPath, `./TRACE/${destination.platform}/${date}_${destination.game}_${destination.deviceName}`)
 
+        //Copy from temp to device (plugin function or standard)
         let device,res;
         for(let e = 0; e < online.length; e++){
             if(online[e].device === destination.device) device = online[e]
@@ -81,9 +94,16 @@ let syncTheSave = async function(source, pushList, online){
         }else{
             res = await device.functions.copyFromTemp(device, destination);
         }
-        console.log(res)
 
+        //Update copy info on repo
+        if(res) await c.db.updateRepoCopiedTo(destination.id);
+        
+        //Push to success array
+        success.push(res?'success':'failed')
     }
+
+    //If there were any failures, return false
+    return success.indexOf('failed' !== -1) ? true: false;
  
 }
 

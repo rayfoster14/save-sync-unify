@@ -177,7 +177,8 @@ let syncASave = async function(online){
 
                         let syncContinue = await ui.bool('Continue with this operation? ');
                         if(syncContinue){
-                            let res = await c.devices.syncTheSave(latestRepo, pushToList, online)
+                            let res = await c.devices.syncTheSave(latestRepo, pushToList, online);
+                            console.log(res?'Sync Successful':'Something went wrong...')
                         }
                     }
                 }        

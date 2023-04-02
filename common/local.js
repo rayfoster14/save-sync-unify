@@ -49,11 +49,7 @@ let copyToTemp = async function(device, k){
 let copyFromTemp = function(device, destination){
 
     let copyToPath = `${device.basePath}/${device.paths[destination.platform]}/${destination.path}`;
-    copyToPath = copyToPath.slice(0,copyToPath.length-3) //REMOVES NEW STR ON COPIED FILE
     let copyFromPath = destination.newSave;
-
-    let date = c.functions.makeDate()
-    fs.copyFileSync(copyToPath, `./TRACE/${destination.platform}/${destination.game}_${date}_${destination.deviceName}`)
     fs.copyFileSync(copyFromPath, copyToPath)
     
     return fs.existsSync(copyToPath);
