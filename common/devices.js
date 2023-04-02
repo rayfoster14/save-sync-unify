@@ -1,5 +1,6 @@
 let plugins = require('../plugins/exec.js').plugins();
 let fs = require('fs');
+let colors = require('colors');
 
 //This get's the online devices and prepares them for continuing...
 let getOnlineDevices = async function(config, mode){
@@ -27,11 +28,11 @@ let getOnlineDevices = async function(config, mode){
 let prepareFiles = async function(devices){
     c.functions.dirRemove('./TEMP');
     c.functions.dirCreate('./TEMP');
-
     c.functions.dirCreate('./TRACE')
 
     for(let i = 0; i < devices.length; i++){
         let device = devices[i];
+        console.log(`Gathering files for ${device.name[device.type==='ftp'?'cyan':'green']}`)
 
         //Set up folders
         c.functions.dirCreate('./TEMP/'+device.device);
@@ -43,7 +44,6 @@ let prepareFiles = async function(devices){
         }
 
         device.fileList = {};
-        console.log(device)
         for(let i = 0; i < device.platformList.length; i++){
             let k = device.platformList[i];
             if(device.pluginFunctions && device.pluginFunctions.copyToTemp && device.pluginFunctions.copyToTemp[k]){
@@ -98,13 +98,13 @@ let syncTheSave = async function(source, pushList, online){
         //Update copy info on repo
         if(res) await c.db.updateRepoCopiedTo(destination.id);
         
+        
         //Push to success array
         success.push(res?'success':'failed')
     }
 
     //If there were any failures, return false
-    return success.indexOf('failed' !== -1) ? true: false;
- 
+    return success.indexOf('failed') !== -1;
 }
 
 

@@ -127,7 +127,7 @@ let run = function(){
     });
     app.post(apiPrefix+'/syncTheSave', async function(request, response){
         if(request.body){
-            let res = await c.devices.syncTheSave(request.body.latest,request.body.pushList);
+            let res = await c.devices.syncTheSave(request.body.latest,request.body.pushList, online);
             res = {
                 successful: true
             }

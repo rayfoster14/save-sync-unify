@@ -1,9 +1,15 @@
-
-<a href="config.html">config</a>
+<head>
+    <link href="https://unpkg.com/nes.css@latest/css/nes.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
+    
+</head>
 
 
 <body>
+    <div class="nes-container with-title" id="mainContainer">
+    <div class="title"><h2>Sync Saves Utility</h2></div>
     <div id="content">
+        </div>
 
     </div>
 </body>
@@ -11,5 +17,25 @@
 <style>
 .hidden {
     display: none;
+}
+#mainContainer{
+    max-width:700px;
+    margin:auto;
+    margin-top:20px;
+}
+.leftButtonDiv{
+    float:left
+}
+.rightButtonDiv{
+    text-align:right;
+}
+.deviceListing{
+margin-bottom: 20px;
+    background-color: #7a5a5a;
+}
+.unavailableDevice{
+    color:#aaa!important;
+    border-color:#aaa!important;
+    background-color:#ddd!important;
 }
 </style>

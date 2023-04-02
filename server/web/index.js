@@ -22,8 +22,8 @@ writePrefChange = async function(e){
 }
 
 let copyToTemp = async function(){
-    document.getElementById('copyToTempButton').innerHTML="";
-  
+    document.getElementById('startButtonDiv').classList.add('hidden');
+
     let loading = document.getElementById('loading');
     loading.classList.remove('hidden');
 
@@ -43,12 +43,25 @@ let createDropdownSelects = function(arr){
     return select
 }
 
-let deviceNewGameElem, platformNewGameElem, fileNewGameElem,existingRepoElem,newGameTextBtn,newGameSelectBtn, createNew, newGameNameElem,newGameSubmitBtn, syncGamePlatformElem, syncGameExistingElem, syncGameStartElem, syncGameInfoElem, syncGameDeviceElem,syncGameSyncInfoElem
+let deviceNewGameElem, platformNewGameElem, fileNewGameElem,existingRepoElem,newGameTextBtn,newGameSelectBtn, createNew, newGameNameElem,newGameSubmitBtn, syncGamePlatformElem, syncGameExistingElem, syncGameStartElem, syncGameInfoElem, syncGameDeviceElem,syncGameSyncInfoElem, mainMenu, newGameNameArea ,existingRepoArea
 
-let latestRepo, pushToList, available
+let addPlatformArea, addDeviceArea, addFileArea, addNameArea,  syncGameGameArea,
+syncGameDeviceArea
+
+let latestRepo, pushToList, available;
+
+
+let resetElements = function(){
+    let addToGameHidden = [deviceNewGameElem, fileNewGameElem,existingRepoElem,newGameTextBtn,newGameSelectBtn, newGameNameElem,newGameSubmitBtn, syncGameExistingElem, syncGameStartElem, syncGameInfoElem, syncGameDeviceElem,syncGameSyncInfoElem, addDeviceArea, addFileArea, addNameArea,  newGameNameArea ,existingRepoArea,  syncGameGameArea, syncGameDeviceArea ];
+    for(let i = 0; i < addToGameHidden.length; i++){
+        addToGameHidden[i].classList.add('hidden');
+        if(addToGameHidden[i].value) addToGameHidden[i].value = "";
+    }
+}
 
 let addNewGame = async function(){
     let newGameAreaElem = document.getElementById('addNewGame');
+    mainMenu.classList.add('hidden');
     let platformList = await post(apiPrefix+'/getOnlinePlatformList', {online:onlineObj}, true);
     let select = createDropdownSelects(platformList);
     newGameAreaElem.classList.remove('hidden');
@@ -61,6 +74,7 @@ let newGameSetPlatform = async function(){
         let deviceList = await post(apiPrefix+'/getFilteredOnlinePlatformDevices', {online:onlineObj, platform}, true)
         let select = createDropdownSelects(deviceList);
         deviceNewGameElem.classList.remove('hidden');
+        addDeviceArea.classList.remove('hidden')
         deviceNewGameElem.innerHTML = select;
     }
 
@@ -71,6 +85,7 @@ let newGameSetDevice = async function(){
     if(device !== ""){
         let fileList = await post(apiPrefix+'/getFilteredOnlinePlatformDeviceFileList', {online:onlineObj, platform, device}, true)
         let select = createDropdownSelects(fileList);
+        addFileArea.classList.remove('hidden')
         fileNewGameElem.classList.remove('hidden');
         fileNewGameElem.innerHTML = select;
     }
@@ -93,6 +108,13 @@ let showNewGameNameField = function(e){
     let unSelectedElem =  !createNew ? newGameNameElem : existingRepoElem;
     selectedElem.classList.remove('hidden');
     unSelectedElem.classList.add('hidden');
+
+    let selectedElemArea = createNew ? newGameNameArea : existingRepoArea;
+    let unSelectedElemArea =  !createNew ? newGameNameArea : existingRepoArea;
+    selectedElemArea.classList.remove('hidden');
+    unSelectedElemArea.classList.add('hidden');
+
+    addNameArea.classList.remove('hidden');
 }
 
 let showSubmit = function(e){
@@ -112,11 +134,7 @@ let newGameSubmit = async function(){
     console.log(postingData)
     let res = await(post(apiPrefix+'/addOrUpdateRepo', postingData, true));
     if(res){
-        let addToGameHidden = [deviceNewGameElem, fileNewGameElem,existingRepoElem,newGameTextBtn,newGameSelectBtn, newGameNameElem,newGameSubmitBtn];
-        for(let i = 0; i < addToGameHidden.length; i++){
-            addToGameHidden[i].classList.add('hidden');
-            if(addToGameHidden[i].value) addToGameHidden[i].value = "";
-        }
+       resetElements();
         document.getElementById('addNewGame').classList.add('hidden');
         document.getElementById('menu').classList.add('hidden');
         document.getElementById('successScreen').classList.remove('hidden');
@@ -124,14 +142,16 @@ let newGameSubmit = async function(){
     }
 }
 
+
+
 let returnToMenu = function(){
     document.getElementById('successScreen').classList.add('hidden');
     document.getElementById('menu').classList.remove('hidden');
 }
 
 let syncGame = async function(){
-    let syncArea = document.getElementById('syncGame')
-    console.log(syncArea)
+    let syncArea = document.getElementById('syncGame');
+    mainMenu.classList.add('hidden');
     syncArea.classList.remove('hidden');
     let platformList = await post(apiPrefix+'/getOnlinePlatformList', {online:onlineObj}, true)
     let select = createDropdownSelects(platformList);
@@ -145,6 +165,7 @@ let syncGameSetPlatform = async function(){
         let gameList = await post(apiPrefix+'/getFilteredGameList', {platform}, true)
         let select = createDropdownSelects(gameList);
         syncGameExistingElem.classList.remove('hidden');
+        syncGameGameArea.classList.remove('hidden');
         syncGameExistingElem.innerHTML = select;
     }
 }
@@ -154,27 +175,54 @@ let syncGameSetGame  = async function(){
     if(game !== ""){
         let repoData = await post(apiPrefix+'/getRepoStatInfo',{platform,game}, true);
         console.log(repoData)
-        
-        let nd = async function(d,time){
-            return await post(apiPrefix+'/nd',{d,time});
+        let zeros = function(str){
+            str+="";
+            return str.length === 1 ? '0'+str:str
+        }
+        let nd = function(date,incTime){
+            if(!date) return '';
+            if(typeof(date)==="string") date = new Date(date);
+            let d = date;
+            return`${zeros(d.getDate())}/${zeros(d.getMonth()+1)}/${d.getFullYear()} ${incTime?`${zeros(d.getHours())}:${zeros(d.getMinutes())}:${zeros(d.getSeconds())}`:""}`
         }
         let infoStr = "";
         available = [];
         for(let i = 0; i < repoData.length; i++){
-            infoStr += "<br>"+('----')
             let entry = repoData[i];
-            infoStr += "<br>"+(`Device: ${entry.deviceName}`)
-            if(entry.lastCopiedTo!==""&&entry.lastCopiedTo)infoStr += "<br>"+(`Last Time Copied to: ${await nd(entry.lastCopiedTo, true)} `)
-            if(entry.lastCopiedFrom!==""&&entry.lastCopiedFrom)infoStr += "<br>"+(`Last Time Copied from: ${await nd(entry.lastCopiedFrom, true)}`)
+
+            infoStr+=`<div class="nes-container deviceListing with-title ${entry.present?'':'unavailableDevice'}" style="margin-bottom:20px;">
+            <h3 class="title">${entry.deviceName}</h3>
+            <div class="nes-table-responsive">
+            <table class="nes-table is-bordered is-centered">
+            <tbody>
+                <tr>
+                    <td>Last Copied to</td>
+                    <td>${nd(entry.lastCopiedTo, true)}</td>
+                </tr>
+                <tr>
+                    <td>Last Copied from</td>
+                    <td>${nd(entry.lastCopiedFrom, true)}</td>
+                </tr>
+                <tr>
+                    <td>Last Modified</td>
+                    <td>${nd(entry.modifiedTime, true)}</td>
+                </tr>
+            </tbody>
+            </table>
+            </div>
+            `
             if(entry.present){
                 available.push(entry)
-                infoStr += "<br>"+('Status: AVAILABLE')
-                infoStr += "<br>"+(`Modified Time: ${await nd(entry.modifiedTime,true)}`)
-                infoStr += "<br>"+(`Checksum: ${entry.crc32}`)
-            }else{
-                infoStr += "<br>"+('Status: UNAVAILABLE')
+                 infoStr+=`
+                <br>
+                <div class="nes-container is-centered is-dark with-title">
+                    <p class="title">Checksum</p>
+                    <p>${entry.crc32}</p>
+                </div>
+            `
             }
-            infoStr += "<br>"+('');
+            console.log(entry)
+            infoStr += "</div>"
         }
         let availableDevices = available.map(function(x){
             return {value:x.device, text:x.deviceName}
@@ -182,6 +230,7 @@ let syncGameSetGame  = async function(){
         let select = createDropdownSelects(availableDevices);
         syncGameDeviceElem.classList.remove('hidden');
         syncGameDeviceElem.innerHTML = select;
+        syncGameDeviceArea.classList.remove('hidden')
         syncGameInfoElem.classList.remove('hidden');
         syncGameInfoElem.innerHTML = infoStr;
     }
@@ -198,83 +247,166 @@ let syncGameSetDevice = async function(){
                 pushToList.push(available[i]);
             }
         }
-        let htmlStr = `Copying the save from ${latestRepo.deviceName} to:`
+        let htmlStr = ` 
+        <div class="nes-container is-centered is-dark with-title">
+        <p class="title">Copying Save from</p>
+        <p>${latestRepo.deviceName}</p>
+        </div><br>
+        <div class="nes-container is-centered is-dark with-title">
+        <p class="title">Copying Save to</p><p>
+        `
 
         for(let u = 0; u < pushToList.length; u++){
-            htmlStr+=('\n'+`${pushToList[u].deviceName}`)
+            htmlStr+=`${pushToList[u].deviceName}<br>`
         }
+        htmlStr += `</p></div><br>`
         syncGameSyncInfoElem.innerHTML = htmlStr;
         syncGameSyncInfoElem.classList.remove('hidden');
         syncGameStartElem.classList.remove('hidden');
+        
     }
 }
 let syncGameStart = async function(){
+    document.getElementById('syncGame').classList.add('hidden')
+    resetElements()
     let res = await post(apiPrefix+'/syncTheSave', {
         latest: latestRepo,
         pushList: pushToList
     }, true);
-    console.log(res)
+    if(res.successful){
+        document.getElementById('successScreen').classList.remove('hidden');
+        document.getElementById('successMessage').innerHTML = "Sync Completed"
+    }else{
+        document.getElementById('successMessage').innerHTML = "Sync Failed"
+    }
 }
 
 let renderMenu = async function(){
 
     let interface = `
     <div id="menu">
-        <button id="addGame"" onClick="addNewGame()">Add New Game</button>
-        <button id="syncGameBtn" onClick="syncGame()">Sync a Game</button>
+    <div class="leftButtonDiv">
+        <button id="addGame"" class="nes-btn" onClick="addNewGame()">Add Game</button>
+    </div>
+    <div class="rightButtonDiv">
+        <button id="syncGameBtn" class="nes-btn" onClick="syncGame()">Sync Game</button>
+    </div>
         
     </div>
 
-    <div id="addNewGame" class="hidden">
-        Select Platform
-        <select onChange="newGameSetPlatform()" id="addGame_platform"></select>
+    <div id="addNewGame"  class="hidden nes-container with-title">
+        <h3 class="title">Add a Game</h3>
+        <div id="addGame_platform_area">
+        <label for="addGame_platform" >Select Platform</label>
+        <div class="nes-select">
+            <select onChange="newGameSetPlatform()" id="addGame_platform"></select>
+        </div>
+        </div>
         <br>
-        Select Device
-        <select onChange="newGameSetDevice()" class="hidden" id="addGame_device"></select>
+
+        <div id="addGame_device_area">
+        <label for="addGame_device" >Select Device</label>
+        <div class="nes-select">
+            <select onChange="newGameSetDevice()" class="hidden" id="addGame_device"></select>
+        </div>
+        </div>
         <br>
-        Select File
-        <select onChange="newGameSetFile()" class="hidden" id="addGame_file"></select>
+
+        <div id="addGame_file_area">
+        <label for="addGame_file" >Select File</label>
+        <div class="nes-select">
+            <select onChange="newGameSetFile()" class="hidden" id="addGame_file"></select>
         <br>
-        Existing Game or New Game
-        <button class="hidden" onClick="showNewGameNameField(this)" id="addGame_existing">Existing</button>
-        <button class="hidden" onClick="showNewGameNameField(this)" id="addGame_NewGame">New Game</button>
+        </div>
+        </div>
         <br>
-        <select class="hidden" onChange="showSubmit(this)" id="newGame_existingList"></select>
-        <input class="hidden" onChange="showSubmit(this)"  id="newGame_newGameName" />
+
+        <div class="leftButtonDiv">
+            <button class="hidden nes-btn" onClick="showNewGameNameField(this)" id="addGame_existing">Existing</button>
+        </div>
+        <div class="rightButtonDiv">
+            <button class="hidden nes-btn" onClick="showNewGameNameField(this)" id="addGame_NewGame">New Game</button>
+        </div>
         <br>
-        <button class="hidden" id="newGame_submit" onClick="newGameSubmit()">SUBMIT</button>
+        <div id="addGame_name_area">
+        
+            <div id="newGame_existingListArea" class="nes-select">
+            <label for="newGame_existingList">Select a Game</label>
+            <select class="hidden nes-input" onChange="showSubmit(this)" id="newGame_existingList"></select>
+            </div>
+
+            <div id="newGame_newGameNameArea" class="nes-field">
+            <label for="newGame_newGameName">Type a new name</label>
+            <input class="hidden nes-input" onChange="showSubmit(this)"  id="newGame_newGameName" />
+            </div>
+            </div>
+        <br>
+
+        <button class="hidden nes-btn is-primary" id="newGame_submit" onClick="newGameSubmit()">Let's go</button>
     </div>
 
-    <div id="syncGame" class="hidden">
-        Select Platform
-        <select onChange="syncGameSetPlatform()" id="syncGame_platform"></select>
-        <br>
-        Select Game
+    <div id="syncGame" class="hidden nes-container with-title">
+    <h3 class="title">Sync a Game</h3>
+
+    <div id="syncGame_platformArea">
+        <label for="syncGame_platform" >Select Platform</label>
+        <div class="nes-select">
+            <select onChange="syncGameSetPlatform()" id="syncGame_platform"></select>
+        </div>
+    </div>
+    <br>
+
+    <div id="syncGame_existingList_area">
+        <label for="syncGame_existingList" >Select Game</label>
+        <div class="nes-select">
         <select class="hidden" onChange="syncGameSetGame()" id="syncGame_existingList"></select>
-        <br>
-        <div id="syncGame_info" class="hidden"></div>
-        Select Latest Device
+        </div>
+    </div>
+    <br>
+
+    <div id="syncGame_info" class="hidden"></div>
+    <br>
+
+    <div id="syncGame_device_area">
+        <label for="syncGame_device" >Select latest Device</label>
+        <div class="nes-select">
         <select class="hidden" onChange="syncGameSetDevice()" id="syncGame_device"></select>
-        <br>
+
+        </div>
+    </div>
+    <br>
+   
         <div id="syncGame_syncInfo" class="hidden"></div>
-        <button id="syncGame_start" onClick="syncGameStart()" class="hidden">Sync</button>
+        <br>
+        <div style="margin:auto">
+        <button id="syncGame_start" class="nes-btn is-primary" onClick="syncGameStart()" class="hidden">Sync</button>
+        </div>
 
     </div>
 
-    <div id="successScreen"class="hidden">
-        <h2 id="successMessage"></h2>
-        <button id="return" onClick="returnToMenu()">Return To Menu</button>
+    <div id="successScreen"class="hidden nes-container is-centered">
+        <h2 id="successMessage" class="nes-text is-primary"></h2>
+        <button id="return" class="nes-btn is-primary" onClick="returnToMenu()">Return To Menu</button>
     </div>
     `
     htmlArea.innerHTML = interface;
+    mainMenu = document.getElementById('menu')
     deviceNewGameElem = document.getElementById('addGame_device');
     platformNewGameElem = document.getElementById('addGame_platform');
+    addFileArea = document.getElementById('addGame_file_area');
+    addDeviceArea = document.getElementById('addGame_device_area');
+    addPlatformArea = document.getElementById('addGame_platform_area');
+    addNameArea = document.getElementById('addGame_name_area');
     fileNewGameElem = document.getElementById('addGame_file');
     existingRepoElem = document.getElementById('newGame_existingList');
+    newGameNameArea = document.getElementById('newGame_newGameNameArea')
+    existingRepoArea = document.getElementById('newGame_existingListArea')
     newGameNameElem = document.getElementById('newGame_newGameName');
     newGameTextBtn = document.getElementById('addGame_existing');
     newGameSelectBtn = document.getElementById('addGame_NewGame');
     newGameSubmitBtn = document.getElementById('newGame_submit');
+
+
     syncGameExistingElem = document.getElementById('syncGame_existingList');
     syncGamePlatformElem = document.getElementById('syncGame_platform');
     syncGameDeviceElem = document.getElementById('syncGame_device');
@@ -282,6 +414,10 @@ let renderMenu = async function(){
     syncGameStartElem = document.getElementById('syncGame_start');
     syncGameSyncInfoElem = document.getElementById('syncGame_syncInfo');
 
+    syncGameGameArea = document.getElementById('syncGame_existingList_area');
+    syncGameDeviceArea = document.getElementById('syncGame_device_area')
+
+    resetElements()
 }
 
 let renderFirstStep = async function(){
@@ -295,17 +431,31 @@ let renderFirstStep = async function(){
     }();
 
 
-   
-    let html ="";
+   //Device List HTML
+    let html =`<div class="nes-container with-title "><p class="title">Devices</p>`;
     for(let i = 0; i < deviceList.length; i++){
         let device = deviceList[i];
-        html +=`<br><input type="checkbox" onClick="writePrefChange(this)" device="${device.device}" id="${device.device}_pref" ${!device.online ? "disabled='true'" : '' } /> ${device.name} : ${device.online?'ONLINE':'UNAVAILABLE'}`
+        html +=`<label>
+            <input class="nes-checkbox" type="checkbox" onClick="writePrefChange(this)" device="${device.device}" id="${device.device}_pref" ${!device.online ? "disabled='true'" : '' } />
+            <span class="nes-text ${device.online?'is-success':'is-disabled'}"> ${device.name} </span>
+        </label><br>`
     }
+    html+='</div>'
     htmlArea = document.getElementById('content');
     htmlArea.innerHTML = html;
 
-    htmlArea.innerHTML += "<br><div id='copyToTempButton'><button onClick='copyToTemp()'>Copy To Temp</button></div>"
-    htmlArea.innerHTML += "<div id='loading' class='hidden'>LOADING... </div>";
+    //Buttons HTML
+    htmlArea.innerHTML += `<br>
+    <div id="startButtonDiv">
+    <div class="leftButtonDiv" id='copyToTempButton'>
+        <button class="nes-btn" onClick='copyToTemp()'>Start</button>
+    </div>
+    <div id='configButton' class="rightButtonDiv">
+        <button class="nes-btn"  onClick="location.href = 'config.html'" >Config</button>
+    </div>
+    </div>`
+
+    htmlArea.innerHTML += `<div id='loading' class='hidden nes-container is-centered'> <h3>Please standby</h3> </div>`;
 
 
     /** Check Marks Set up  */

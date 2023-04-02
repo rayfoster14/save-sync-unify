@@ -69,37 +69,32 @@ let copyToTemp = async function(device, k){
 }
 
 let copyFromTemp = async function(device, destination){
-    let sucess;
-    try{
-        //Local File
-        let copyFromPath = destination.newSave;
+ 
+    //Local File
+    let copyFromPath = destination.newSave;
 
-        //FTP File to be overwritten
-        let deviceDir = device.paths[destination.platform]
-        let deviceFile = destination.path
+    //FTP File to be overwritten
+    let deviceDir = device.paths[destination.platform]
+    let deviceFile = destination.path
 
-        //FTP Client Create
-        let client = await newConnection();
-        await client.access({
-            host: device.ftpAddress,
-            user: device.ftpUser,
-            password: device.ftpPW,
-            port: device.ftpPort
-        });
+    //FTP Client Create
+    let client = await newConnection();
+    await client.access({
+        host: device.ftpAddress,
+        user: device.ftpUser,
+        password: device.ftpPW,
+        port: device.ftpPort
+    });
 
-        //Navigate to ftp directory
-        await client.cd(deviceDir);
+    //Navigate to ftp directory
+    await client.cd(deviceDir);
 
-        //Copy file from temp directory to ftp directory
-        let result = await client.uploadFrom(copyFromPath, deviceFile);
+    //Copy file from temp directory to ftp directory
+    let result = await client.uploadFrom(copyFromPath, deviceFile);
 
-        //If result.code === 226 (successful) return true
-        success= result.code === 226 ? true : false
-    }catch(e){
-        console.log(e)
-        return false;
-    }
-    return sucess
+    //If result.code === 226 (successful) return true
+    return result.code === 226 ? true : false
+
 }
 
 module.exports={
