@@ -17,9 +17,21 @@ let tables = {
         "ftpPort":	        "TEXT"
     },
     discovery:{
-            "device":	"TEXT",
-	        "instance":	"TEXT",
-	        "discover":	"INTERGER"
+            "device":	    "TEXT",
+	        "instance":	    "TEXT",
+	        "discover":	    "INTERGER"
+    },
+    mappging:{
+        "device":           "TEXT",
+        "game":             "TEXT",
+        "path":             "TEXT",
+        "lastCopiedFrom":   "TEXT",
+        "lastCopiedTo":     "TEXT",
+        "platform":         "TEXT" 
+    },
+    platforms:{
+        "name":             "TEXT",
+        "short":            "TEXT"
     }
 }
 
