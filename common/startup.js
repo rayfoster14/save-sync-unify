@@ -7,9 +7,13 @@ module.exports = async function(){
 
     if(!process.env.REPO_PATH){
         console.log('NO REPO PATH')
+        return false;
     }else{
-        if(!fs.existsSync(process.env.REPO_PATH))fs.mkdirSync(process.env.REPO_PATH)
+        c.functions.dirCreate(process.env.REPO_PATH);
+        c.functions.dirCreate(process.env.REPO_PATH+'/DEVICE');
+        c.functions.dirCreate(process.env.REPO_PATH+'/TRACE');
     }
+    
 
     //Makes runtime identity
     let identifierPath = pth.join(process.cwd(), 'instance');
@@ -22,5 +26,5 @@ module.exports = async function(){
 
     //DB Check
     await db.setup();
-
+    return true;
 }

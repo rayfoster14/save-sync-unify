@@ -5,12 +5,7 @@ let fs = require('fs');
 global.c = require('../common/common.js');
 let ui = require('./ui.js');
 
-let preferences, devices, repo;
-
-
-c.startup();
-let instance = fs.readFileSync('instance').toString();
-
+let preferences, devices, repo, instance;
 
 //Edits the discovery configuration
 let editDiscovery = async function(devices){
@@ -187,7 +182,25 @@ let syncASave = async function(online){
     }while(platform)
 }
 
+let pushRepositories = async function(){
+    let repos = [
+        process.env.REPO_PATH,
+        process.env.REPO_PATH+'/TRACE',
+        process.env.REPO_PATH+'/DEVICE'
+    ]
+    for(let i = 0; i < repos.length; i++){
+        console.log(`Pushing REPO ${repos[i]}`)
+        let push = await c.git.push(repos[i]);
+        if(!push)console.log('Push not successful')
+    }
+}
+
 let main = async function(){
+    let state = await c.startup();
+    if(!state)return false;
+
+
+    instance = fs.readFileSync('instance').toString();
 
     let config = await c.db.getConfig();
     devices = await c.devices.getOnlineDevices(config, 'local');
@@ -204,6 +217,7 @@ let main = async function(){
     [
         "Sync",
         "Add new Save",
+        "Push Repositories",
         "Quit"
     ]
     let quit;
@@ -212,7 +226,8 @@ let main = async function(){
         await [
             syncASave.bind(undefined, online, repo),
             addNewSave.bind(undefined, online,repo),
-            function(){console.log('quitting');quit=true}
+            pushRepositories.bind(undefined),
+            function(){console.log('Exiting...');quit=true}
         ][choice]();
     }while(!quit)
 

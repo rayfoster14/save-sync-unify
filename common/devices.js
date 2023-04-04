@@ -1,6 +1,7 @@
 let plugins = require('../plugins/exec.js').plugins();
 let fs = require('fs');
 let colors = require('colors');
+let {zip} = require('zip-a-folder');
 
 //This get's the online devices and prepares them for continuing...
 let getOnlineDevices = async function(config, mode){
@@ -28,7 +29,9 @@ let getOnlineDevices = async function(config, mode){
 let prepareFiles = async function(devices){
     c.functions.dirRemove('./TEMP');
     c.functions.dirCreate('./TEMP');
-    c.functions.dirCreate('./TRACE')
+    c.functions.dirCreate('./TEMP/ZIP')
+    c.functions.dirCreate(`${process.env.REPO_PATH}/TRACE`);
+
 
     for(let i = 0; i < devices.length; i++){
         let device = devices[i];
@@ -40,7 +43,7 @@ let prepareFiles = async function(devices){
             let k = device.platformList[e];
             c.functions.dirCreate(`./TEMP/${device.device}/${k}`);
             c.functions.dirCreate(`${process.env.REPO_PATH}/${k}`);
-            c.functions.dirCreate(`./TRACE/${k}`)
+            c.functions.dirCreate(`${process.env.REPO_PATH}/TRACE/${k}`)
         }
 
         device.fileList = {};
@@ -51,8 +54,18 @@ let prepareFiles = async function(devices){
             }else if(typeof(device.functions.copyToTemp === 'function')){
                 device = await device.functions.copyToTemp(device, k);
             }
+
+            let newZipFile = `${c.functions.numberDate()}_${k}_${device.device}_${identity}.zip`
+            await zip(`./TEMP/${device.device}/${k}`, `./TEMP/ZIP/${newZipFile}`)
+            fs.copyFileSync(`./TEMP/ZIP/${newZipFile}`, `${process.env.REPO_PATH}/DEVICE/${newZipFile}`)
         }
     }
+
+    //Do the GIT for Backups
+    if(await c.git.exists( `${process.env.REPO_PATH}/DEVICE/`)){
+        await c.git.add(`${process.env.REPO_PATH}/DEVICE/`);
+    }
+
     return devices
 }
 
@@ -82,7 +95,7 @@ let syncTheSave = async function(source, pushList, online){
 
         //Create a backup trace file of file we are replacing
         let date = c.functions.makeDate().replace(/:/g, '.')
-        fs.copyFileSync(destination.sessionPath, `./TRACE/${destination.platform}/${date}_${destination.game}_${destination.deviceName}`)
+        fs.copyFileSync(destination.sessionPath, `${process.env.REPO_PATH}/TRACE/${destination.platform}/${date}_${destination.game}_${destination.deviceName}`)
 
         //Copy from temp to device (plugin function or standard)
         let device,res;
@@ -97,14 +110,21 @@ let syncTheSave = async function(source, pushList, online){
 
         //Update copy info on repo
         if(res) await c.db.updateRepoCopiedTo(destination.id);
-        
-        
+                
         //Push to success array
         success.push(res?'success':'failed')
     }
 
+    //Do the GIT for Trace and Main REPO
+    if(await c.git.exists( `${process.env.REPO_PATH}/TRACE/`)){
+        await c.git.add(`${process.env.REPO_PATH}/TRACE/`);
+    }
+    if(await c.git.exists( `${process.env.REPO_PATH}`)){
+        await c.git.add(`${process.env.REPO_PATH}`);
+    }
+
     //If there were any failures, return false
-    return success.indexOf('failed') !== -1;
+    return success.indexOf('failed') === -1;
 }
 
 

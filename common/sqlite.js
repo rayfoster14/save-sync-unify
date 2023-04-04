@@ -21,7 +21,7 @@ let tables = {
 	        "instance":	    "TEXT",
 	        "discover":	    "INTERGER"
     },
-    mappging:{
+    mapping:{
         "device":           "TEXT",
         "game":             "TEXT",
         "path":             "TEXT",

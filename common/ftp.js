@@ -3,19 +3,19 @@ let ftp = require('basic-ftp');
 let globby = require('glob');
 let fs = require('fs');
 
-
 let  newConnection = function () {
     return new Promise(function (resolve, reject) {
-        var client = new ftp.Client();
-        client.ftp.verbose=false//true;
+        let client = new ftp.Client();
+        client.ftp.verbose=true//false//true;
         resolve(client)
     });
 };
 
 //Checks URL and returns if it's alive or not
 let onlineCheck = async function(device){
-    let address = `ftp://${device.ftpAddress}:${device.ftpPort}`;
-    return await isReachable(address);
+
+    let address = `${device.ftpAddress}:${device.ftpPort}`;
+    return await isReachable(address, {timeout:60000});
 };
 
 
@@ -91,6 +91,8 @@ let copyFromTemp = async function(device, destination){
 
     //Copy file from temp directory to ftp directory
     let result = await client.uploadFrom(copyFromPath, deviceFile);
+    
+    client.close()
 
     //If result.code === 226 (successful) return true
     return result.code === 226 ? true : false
@@ -102,3 +104,4 @@ module.exports={
     copyFromTemp,
     onlineCheck
 }
+

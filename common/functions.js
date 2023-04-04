@@ -26,13 +26,13 @@ let getRepo = async function(){
 
 //If dir doesn't exist, create it
 let dirCreate = function(dir){
-    dir = path.join(process.cwd(), dir);
+    dir = path.join(dir);
     if(!fs.existsSync(dir))fs.mkdirSync(dir);
 }
 
 let dirRemove = function(dir){
     dir = path.join(process.cwd(), dir);
-    if(fs.existsSync)fs.rmSync(dir, {recursive:true});
+    if(fs.existsSync(dir))fs.rmSync(dir, {recursive:true});
 
 }
 
@@ -63,6 +63,7 @@ let getOnlinePlatformList = async function(online, choiceArray){
 }
 
 let getFilteredGameList = function(repo, platform){
+    if(!repo[platform]) return [];
     return Object.keys(repo[platform]);
 }
 
@@ -94,6 +95,10 @@ let niceDate = function(date, incTime){
     if(typeof(date)==="string") date = new Date(date);
     let d = date;
     return`${zeros(d.getDate())}/${zeros(d.getMonth()+1)}/${d.getFullYear()} ${incTime?`${zeros(d.getHours())}:${zeros(d.getMinutes())}:${zeros(d.getSeconds())}`:""}`
+}
+let numberDate = function(date){
+    let d = date ?? new Date();
+    return `${d.getFullYear()}-${zeros(d.getMonth()+1)}-${zeros(d.getDate())}_${zeros(d.getHours())}-${zeros(d.getMinutes())}-${zeros(d.getSeconds())}`
 }
 
 let addOrUpdateRepo = async function(writeData, repo){
@@ -176,5 +181,6 @@ module.exports={
     addOrUpdateRepo,
     getSaveStats,
     niceDate,
-    makeDate
+    makeDate,
+    numberDate
 }
