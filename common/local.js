@@ -71,7 +71,7 @@ module.exports={
         }
         else if(process.platform === "linux"){
             //Linux Version
-            let sourceDir = getDriveDir("/mnt", device.localExistCheck);
+            let sourceDir = getDriveDir("/media", device.localExistCheck);
             if(sourceDir){
                 device.basePath = sourceDir;
                 return true;
