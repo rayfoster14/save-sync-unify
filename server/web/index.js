@@ -147,6 +147,10 @@ let newGameSubmit = async function(){
 let returnToMenu = function(){
     document.getElementById('successScreen').classList.add('hidden');
     document.getElementById('menu').classList.remove('hidden');
+
+    resetElements();
+    document.getElementById('addNewGame').classList.add('hidden');
+    document.getElementById('syncGame').classList.add('hidden')
 }
 
 let syncGame = async function(){
@@ -343,6 +347,10 @@ let renderMenu = async function(){
         <br>
 
         <button class="hidden nes-btn is-primary" id="newGame_submit" onClick="newGameSubmit()">Let's go</button>
+        <div class="rightButtonDiv">
+        <button id="goBack" class="nes-btn" onClick="returnToMenu()">Back</button>
+    </div>
+
     </div>
 
     <div id="syncGame" class="hidden nes-container with-title">
@@ -381,6 +389,9 @@ let renderMenu = async function(){
         <div style="margin:auto">
         <button id="syncGame_start" class="nes-btn is-primary" onClick="syncGameStart()" class="hidden">Sync</button>
         </div>
+        <div class="rightButtonDiv">
+        <button id="goBack" class="nes-btn" onClick="returnToMenu()">Back</button>
+    </div>
 
     </div>
 
@@ -388,6 +399,7 @@ let renderMenu = async function(){
         <h2 id="successMessage" class="nes-text is-primary"></h2>
         <button id="return" class="nes-btn is-primary" onClick="returnToMenu()">Return To Menu</button>
     </div>
+ 
     `
     htmlArea.innerHTML = interface;
     mainMenu = document.getElementById('menu')
