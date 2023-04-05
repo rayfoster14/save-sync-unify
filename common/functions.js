@@ -100,6 +100,10 @@ let numberDate = function(date){
     let d = date ?? new Date();
     return `${d.getFullYear()}-${zeros(d.getMonth()+1)}-${zeros(d.getDate())}_${zeros(d.getHours())}-${zeros(d.getMinutes())}-${zeros(d.getSeconds())}`
 }
+let yearMonth = function(date){
+    let d = date ?? new Date();
+    return `${d.getFullYear()}_${zeros(d.getMonth()+1)}`
+}
 
 
 //This needs to happen as there's some crazy permssion issues on Linux...
@@ -194,5 +198,6 @@ module.exports={
     niceDate,
     makeDate,
     numberDate,
-    copy
+    copy,
+    yearMonth
 }

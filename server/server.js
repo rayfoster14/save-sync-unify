@@ -142,7 +142,11 @@ let run = function(){
             response.end();
         }
     })
-    
+    app.post(apiPrefix+'/gitPush',  async function(request,response){
+        let res =  await c.git.push(process.env.REPO_PATH+request.body.path);
+        response.send(res);
+        response.end()
+    });   
 
 
     /**CONFIG PAGE**/

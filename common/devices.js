@@ -26,10 +26,12 @@ let getOnlineDevices = async function(config, mode){
 
 //Preps folders and copy files from device to temp
 let prepareFiles = async function(devices){
+    let monthTime = `${new Date().getMonth()}`
     c.functions.dirRemove('./TEMP');
     c.functions.dirCreate('./TEMP');
     c.functions.dirCreate('./TEMP/ZIP')
     c.functions.dirCreate(`${process.env.REPO_PATH}/TRACE`);
+    c.functions.dirCreate(`${process.env.REPO_PATH}/DEVICE/${c.functions.yearMonth()}`)
 
 
     for(let i = 0; i < devices.length; i++){
@@ -56,7 +58,8 @@ let prepareFiles = async function(devices){
 
             let newZipFile = `${c.functions.numberDate()}_${k}_${device.device}_${identity}.zip`
             await zip(`./TEMP/${device.device}/${k}`, `./TEMP/ZIP/${newZipFile}`)
-            c.functions.copy(`./TEMP/ZIP/${newZipFile}`, `${process.env.REPO_PATH}/DEVICE/${newZipFile}`)
+
+            c.functions.copy(`./TEMP/ZIP/${newZipFile}`, `${process.env.REPO_PATH}/DEVICE/${c.functions.yearMonth()}/${newZipFile}`)
         }
     }
 

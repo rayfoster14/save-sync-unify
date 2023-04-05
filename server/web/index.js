@@ -57,6 +57,7 @@ let resetElements = function(){
         addToGameHidden[i].classList.add('hidden');
         if(addToGameHidden[i].value) addToGameHidden[i].value = "";
     }
+    document.getElementById('pushRepo').classList.remove('is-success');
 }
 
 let addNewGame = async function(){
@@ -285,6 +286,38 @@ let syncGameStart = async function(){
     }
 }
 
+let pushRepo = async function(){  
+    let button = document.getElementById('pushRepo');
+    button.classList.add('is-disabled');
+    let startingText = button.innerHTML
+
+    button.innerHTML='Main Repo...'
+    let res = await post(apiPrefix+'/gitPush', {
+        path: ''
+    }, true);
+    console.log(res);
+
+    if(!res)return
+
+    button.innerHTML='Trace Repo...'
+    let res2 = await post(apiPrefix+'/gitPush', {
+        path: '/TRACE'
+    }, true);
+    console.log(res2);
+
+    if(!res2)return
+
+    button.innerHTML='Device Repo...'
+    let res3 = await post(apiPrefix+'/gitPush', {
+        path: '/DEVICE'
+    }, true);
+    console.log(res3);
+
+    button.innerHTML= startingText;
+    button.classList.remove('is-disabled');
+    button.classList.add('is-success')
+}
+
 let renderMenu = async function(){
 
     let interface = `
@@ -294,6 +327,9 @@ let renderMenu = async function(){
     </div>
     <div class="rightButtonDiv">
         <button id="syncGameBtn" class="nes-btn" onClick="syncGame()">Sync Game</button>
+    </div>
+    <div class="" style="margin-top:20px;">
+        <button id="pushRepo" class="nes-btn" onClick="pushRepo()">Git Push</button>
     </div>
         
     </div>
