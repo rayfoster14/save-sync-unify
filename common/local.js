@@ -9,9 +9,12 @@ let getDriveLetter = function (dir) {
 };
 let getDriveDir = function(mountDir, dir){
     if(fs.existsSync(mountDir)){
-        let mountedDevices = fs.readdirSync(mountDir);
-        for(let i = 0; i < mountedDevices.length; i++){
-            if(fs.existsSync(`${mountDir}/${mountedDevices[i]}/${dir}`)) return `${mountDir}/${mountedDevices[i]}`;
+        //This is assuming the path will be /media/USER/DEVICE/...
+        if(fs.existsSync(mountDir) && fs.existsSync(`${mountDir}/${process.env.USER}`)){
+            let mountedDevices = fs.readdirSync(`${mountDir}/${process.env.USER}`);
+            for(let i = 0; i < mountedDevices.length; i++){
+                if(fs.existsSync(`${mountDir}/${process.env.USER}/${mountedDevices[i]}/${dir}`)) return `${mountDir}}/${process.env.USER}/${mountedDevices[i]}/${dir}`;
+            }
         }
     }
 };

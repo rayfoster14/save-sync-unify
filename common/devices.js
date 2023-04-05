@@ -56,7 +56,7 @@ let prepareFiles = async function(devices){
 
             let newZipFile = `${c.functions.numberDate()}_${k}_${device.device}_${identity}.zip`
             await zip(`./TEMP/${device.device}/${k}`, `./TEMP/ZIP/${newZipFile}`)
-            fs.copyFileSync(`./TEMP/ZIP/${newZipFile}`, `${process.env.REPO_PATH}/DEVICE/${newZipFile}`)
+            c.functions.copy(`./TEMP/ZIP/${newZipFile}`, `${process.env.REPO_PATH}/DEVICE/${newZipFile}`)
         }
     }
 
@@ -84,7 +84,7 @@ let syncTheSave = async function(source, pushList, online){
         }else{
             destination.newSave =  destination.sessionPath + 'NEW'
         }
-        fs.copyFileSync(source.sessionPath, destination.newSave);
+        c.functions.copy(source.sessionPath, destination.newSave);
 
         //If we're a repo... then that's it!
         if(destination.device === 'repo'){
@@ -94,7 +94,7 @@ let syncTheSave = async function(source, pushList, online){
 
         //Create a backup trace file of file we are replacing
         let date = c.functions.makeDate().replace(/:/g, '.')
-        fs.copyFileSync(destination.sessionPath, `${process.env.REPO_PATH}/TRACE/${destination.platform}/${date}_${destination.game}_${destination.deviceName}`)
+        c.functions.copy(destination.sessionPath, `${process.env.REPO_PATH}/TRACE/${destination.platform}/${date}_${destination.game}_${destination.deviceName}`)
 
         //Copy from temp to device (plugin function or standard)
         let device,res;

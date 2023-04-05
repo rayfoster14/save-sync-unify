@@ -101,6 +101,17 @@ let numberDate = function(date){
     return `${d.getFullYear()}-${zeros(d.getMonth()+1)}-${zeros(d.getDate())}_${zeros(d.getHours())}-${zeros(d.getMinutes())}-${zeros(d.getSeconds())}`
 }
 
+
+//This needs to happen as there's some crazy permssion issues on Linux...
+let copy = function(source, destination){
+    if(process.platform === "linux"){
+        let fileContent = fs.readFileSync(source);
+        fs.writeFileSync(destination, fileContent)
+    }else{
+        fs.copyFileSync(source, destination)
+    }
+}
+
 let addOrUpdateRepo = async function(writeData, repo){
     let {platform,game,newGameBool,device,path} =  writeData;
 
@@ -117,7 +128,7 @@ let addOrUpdateRepo = async function(writeData, repo){
     if(newGameBool && result){
         //Make a repo entry too
         console.log('New Game... creating a repo file...')
-        fs.copyFileSync(`./TEMP/${device}/${platform}/${path}`, `${process.env.REPO_PATH}/${platform}/${game}`)
+        copy(`./TEMP/${device}/${platform}/${path}`, `${process.env.REPO_PATH}/${platform}/${game}`)
         let repoResult = await c.db.newRepoRecord({
             device : 'repo',
             game,
@@ -182,5 +193,6 @@ module.exports={
     getSaveStats,
     niceDate,
     makeDate,
-    numberDate
+    numberDate,
+    copy
 }
