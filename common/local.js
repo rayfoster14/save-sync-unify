@@ -10,10 +10,13 @@ let getDriveLetter = function (dir) {
 let getDriveDir = function(mountDir, dir){
     if(fs.existsSync(mountDir)){
         //This is assuming the path will be /media/USER/DEVICE/...
-        if(fs.existsSync(mountDir) && fs.existsSync(`${mountDir}/${process.env.USER}`)){
-            let mountedDevices = fs.readdirSync(`${mountDir}/${process.env.USER}`);
+	let pathWithUser = `${mountDir}/${process.env.USER}`
+        if(fs.existsSync(mountDir) && fs.existsSync(pathWithUser)){
+            let mountedDevices = fs.readdirSync(pathWithUser);
             for(let i = 0; i < mountedDevices.length; i++){
-                if(fs.existsSync(`${mountDir}/${process.env.USER}/${mountedDevices[i]}/${dir}`)) return `${mountDir}}/${process.env.USER}/${mountedDevices[i]}/${dir}`;
+		    let thisDir = `${pathWithUser}/${mountedDevices[i]}`
+
+                if(fs.existsSync(thisDir+dir)) return thisDir;
             }
         }
     }
@@ -21,7 +24,7 @@ let getDriveDir = function(mountDir, dir){
 
 let copyToTemp = async function(device, k){    
 
-    let searchPath = `${device.basePath}/${device.paths[k]}`;
+    let searchPath = `${device.basePath}/${device.paths[k]}`.replace('//','/');
     let searchExts = device.extensionSearch[k];
     device.fileList[k] = [];
 
@@ -36,7 +39,6 @@ let copyToTemp = async function(device, k){
     for(let v = 0; v < found.length; v++){
         let path = found[v].replace(/\\/g, '/');
         let rootPath = path.replace(searchPath+'/', '');
-        
         let tempPath = `./TEMP/${device.device}/${k}/${rootPath}`;
         fs.cpSync(path, tempPath);
 
@@ -45,7 +47,7 @@ let copyToTemp = async function(device, k){
             rootPath
         });
     }
-        
+
     return device;
 }
 
