@@ -14,7 +14,6 @@ let getOnlineDevices = async function(config, mode){
         device.functions = c[device.type];
         if(plugins[device.device])  device.pluginFunctions = plugins[device.device];
 
-        if(mode === "server" && device.type !== "ftp") continue;
         device.online = await c[device.type].onlineCheck(device);
 
         //Parsing some of the JSON fields;
