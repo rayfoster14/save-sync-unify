@@ -127,7 +127,7 @@ let setup = async function(){
 };
 
 let getConfig = async function(){
-    return await get(`SELECT * FROM devices`);
+    return await get(`SELECT * FROM devices order by name asc`);
 }
 
 let writeConfig = async function(data){
@@ -171,7 +171,7 @@ let getPlatformNames = async function(){
 }
 
 let getRepo = async function(){
-    return await get(`SELECT * FROM mapping`)
+    return await get(`SELECT * FROM mapping order by game asc`)
 }
 
 let newRepoRecord = async function(obj){

@@ -21,7 +21,7 @@
 #mainContainer{
     max-width:700px;
     margin:auto;
-    margin-top:20px;
+    margin-top:50px;
 }
 .leftButtonDiv{
     float:left
@@ -30,12 +30,29 @@
     text-align:right;
 }
 .deviceListing{
-margin-bottom: 20px;
-    background-color: #7a5a5a;
+    margin-bottom: 20px;
+    background-color: linear-gradient(320deg, #a2c3e2, #cbb3ff00);
 }
 .unavailableDevice{
     color:#aaa!important;
     border-color:#aaa!important;
     background-color:#ddd!important;
 }
+.error{
+
+    background-color:rgba(155, 28, 28, 0.589);
+}
 </style>
+<script>
+    /** PULSE CHECK **/
+    setInterval(async function(){
+        fetch(window.location.href+'alive').then(function(res){
+            if(res.status !== 200){
+                throw new Error('down', {cause:response})
+            }
+        }).catch(function(error){
+        document.getElementById('mainContainer').classList.add('error')
+    });
+    }, 10000)
+
+</script>

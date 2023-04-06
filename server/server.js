@@ -1,13 +1,17 @@
 
 let run = function(){
+    require('dotenv').config();
 
+    if(!process.env.SERVER_PORT){
+        console.log('SET SERVER_PORT IN ENV')
+        return;
+    }
     const express = require('express')
     const app = express();
-    const port = 3000;
+    const port = process.env.SERVER_PORT;
     const path = require('path');
     const fs = require('fs');
 
-    require('dotenv').config();
     global.c = require('../common/common.js');
     app.use(express.urlencoded({
         extended: true
@@ -39,7 +43,10 @@ let run = function(){
         }
         return devices;
     }
-
+    app.get('/alive', function(req,res){
+        res.send({ok:'okk'});
+        res.end()
+    })
     app.get(apiPrefix+'/getOnlineList', async function(request,response){
         config = await c.db.getConfig();
         devices = await c.devices.getOnlineDevices(config, 'server');
@@ -57,24 +64,24 @@ let run = function(){
         response.end()
     });
     app.get(apiPrefix+'/copyToTemp', async function(request, response){
-        config = await c.db.getConfig();
-        devices = await c.devices.getOnlineDevices(config, 'server');
-        preferences = await c.db.getPreferences(instance);
-        for(let i = 0; i < devices.length; i++){
-            let deviceId = devices[i].device;
-            for(let e = 0; e < preferences.length; e++){
-                let pref = preferences[e];
-                if(deviceId === pref.device){
-                    devices[i].discover = pref.discover === 1 && devices[i].online ? true : false;
+            config = await c.db.getConfig();
+            devices = await c.devices.getOnlineDevices(config, 'server');
+            preferences = await c.db.getPreferences(instance);
+            for(let i = 0; i < devices.length; i++){
+                let deviceId = devices[i].device;
+                for(let e = 0; e < preferences.length; e++){
+                    let pref = preferences[e];
+                    if(deviceId === pref.device){
+                        devices[i].discover = pref.discover === 1 && devices[i].online ? true : false;
+                    }
                 }
             }
-        }
-        online = c.functions.getMasterList(devices);
-        online = await c.devices.prepareFiles(online);
-        online = storeFunctions(online); //Required to parse function in API call
-        console.log('Finished Copying from temp')
-        response.send(JSON.stringify(online));
-        response.end()
+            online = c.functions.getMasterList(devices);
+            online = await c.devices.prepareFiles(online);
+            online = storeFunctions(online); //Required to parse function in API call
+            console.log('Finished Copying from temp')
+            response.send(JSON.stringify(online));
+            response.end()
     });
 
     app.post(apiPrefix+'/getOnlinePlatformList', async function(request, response){

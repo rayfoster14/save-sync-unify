@@ -14,6 +14,7 @@
     "crc-32": "^1.2.2",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "fs-extra": "^11.1.1",
     "glob": "^9.3.2",
     "is-reachable": "^5.2.1",
     "readline-sync": "^1.4.10",
@@ -21,7 +22,7 @@
     "sqlite3": "^5.1.6",
     "zip-a-folder": "^1.1.5"
   },
-  "bin": "local/local.js",
+  "bin": "main.js",
   "pkg": {
     "assets": [
       "./node_modules/sqlite3/lib/binding/napi-v6-win32-unknown-x64/node_sqlite3.node",

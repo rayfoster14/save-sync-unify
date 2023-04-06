@@ -1,4 +1,4 @@
-let fs = require('fs');
+let fs = require('fs-extra');
 let globby = require('glob');
 
 let getDriveLetter = function (dir) {
@@ -30,9 +30,14 @@ let copyToTemp = async function(device, k){
 
     //Searches through FS for files with the correct extension
     let found = [];
-    for(let v = 0; v < searchExts.length; v++){
-        let list = await globby(`${searchPath}/**/*.${searchExts[v]}`);
+    if(searchExts.length === 0){
+        let list = await globby(`${searchPath}/**/*`);
         found = found.concat(list);
+    }else{
+        for(let v = 0; v < searchExts.length; v++){
+            let list = await globby(`${searchPath}/**/*.${searchExts[v]}`);
+            found = found.concat(list);
+        }
     }
 
     //Copy files to temp
@@ -40,7 +45,8 @@ let copyToTemp = async function(device, k){
         let path = found[v].replace(/\\/g, '/');
         let rootPath = path.replace(searchPath, '').replace(searchPath+'/','');
         let tempPath = `./TEMP/${device.device}/${k}/${rootPath}`;
-        fs.cpSync(path, tempPath);
+        fs.lstatSync(path).isDirectory() ? fs.copySync(path, tempPath) : fs.cpSync(path, tempPath);
+
 
         device.fileList[k].push({
             temp: tempPath,
