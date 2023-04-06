@@ -38,7 +38,7 @@ let copyToTemp = async function(device, k){
     //Copy files to temp
     for(let v = 0; v < found.length; v++){
         let path = found[v].replace(/\\/g, '/');
-        let rootPath = path.replace(searchPath+'/', '');
+        let rootPath = path.replace(searchPath, '').replace(searchPath+'/','');
         let tempPath = `./TEMP/${device.device}/${k}/${rootPath}`;
         fs.cpSync(path, tempPath);
 

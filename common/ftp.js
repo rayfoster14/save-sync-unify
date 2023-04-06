@@ -6,7 +6,7 @@ let fs = require('fs');
 let  newConnection = function () {
     return new Promise(function (resolve, reject) {
         let client = new ftp.Client();
-        client.ftp.verbose=true//false//true;
+        client.ftp.verbose=false//true;
         resolve(client)
     });
 };
@@ -102,6 +102,7 @@ let copyFromTemp = async function(device, destination){
 module.exports={
     copyToTemp,
     copyFromTemp,
-    onlineCheck
+    onlineCheck,
+    newConnection
 }
 

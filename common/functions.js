@@ -155,6 +155,7 @@ let getSaveStats = async function(entries){
         let entry = entries[i];
         let root = entry.device === 'repo' ? process.env.REPO_PATH: `./TEMP/${entry.device}/${entry.platform}/`;
         let path = `${root}${entry.path}`;
+
         if(fs.existsSync(path)){
             entry.sessionPath = path;
             entry.present = true;
