@@ -1,7 +1,6 @@
 /** ADD EXTERNAL PLUGINS IN HERE */
 
 module.exports={
-    checkpoint3ds: require(process.cwd()+'/plugins/checkpoint3ds.js')
 }
 
 /**** PLUGIN FUNCTIONS ****/
