@@ -1,7 +1,7 @@
 /** ADD EXTERNAL PLUGINS IN HERE */
 
 module.exports={
-
+    checkpoint3ds: require(process.cwd()+'/plugins/checkpoint3ds.js')
 }
 
 /**** PLUGIN FUNCTIONS ****/
@@ -10,6 +10,12 @@ module.exports={
 Plugins will need to define each below function and the respective platform.
 These functions are called from ./common/devices.js
 
+** lib.js 
+module.exports={
+    deviceName: require('./jsFile.js')
+}
+
+** jsFile.js
 module.exports={
     copyToTemp: {
         gb : async function(device, platform){}...

@@ -9,6 +9,7 @@
     <div class="nes-container with-title" id="mainContainer">
     <div class="title"><h2>Sync Saves Utility</h2></div>
     <div id="content">
+        Connecting to Server...
         </div>
 
     </div>
@@ -31,16 +32,30 @@
 }
 .deviceListing{
     margin-bottom: 20px;
-    background-color: linear-gradient(320deg, #a2c3e2, #cbb3ff00);
+    background: linear-gradient(320deg, #a2c3e2, #cbb3ff00);
 }
 .unavailableDevice{
     color:#aaa!important;
     border-color:#aaa!important;
-    background-color:#ddd!important;
+    background:#ddd!important;
 }
 .error{
-
     background-color:rgba(155, 28, 28, 0.589);
+}
+.mappingPath {
+    color: #3d4f7b;
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #afc4ff;
+    float: left;
+    text-align: center;
+    width: 144px;
+    border-radius: 10px;
+    box-shadow: inset 0px 0px 10px 0px;
+    font-size: 9px;
+}
+.mappingStripes:nth-child(even){
+    background: linear-gradient(90deg, transparent, #c4c4c4, transparent)!important
 }
 </style>
 <script>

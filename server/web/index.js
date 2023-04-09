@@ -318,6 +318,64 @@ let pushRepo = async function(){
     button.classList.add('is-success')
 }
 
+let reRenderMapping = async function(){
+    let mappingList = await (await fetch(apiPrefix+'/getFullMapping')).json();
+    let table = `<div class="nes-table-responsive">
+    <table class="nes-table is-bordered is-centered">
+      <thead>
+        <tr>
+          <th>Platform</th>
+          <th>Game</th>
+          <th>Device</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      `
+      for(let i = 0; i < mappingList.length; i++){
+        table+=`
+        <tr class="mappingStripes">
+            <td>${mappingList[i].platform}</td>
+            <td  onClick="togglePath(this)" pathID=${i}>${mappingList[i].game}
+            <span id="${i}_path" class="hidden mappingPath">${mappingList[i].path}</span>
+            </td>
+            <td>${mappingList[i].device}</td>
+            <td class="centeredIcon"><i class="nes-icon close deleteBtn" onClick="deleteMapping(this)" mappingID=${mappingList[i].id} id="delete_${mappingList[i].id}"> </i></td>
+        </tr>
+        `
+      }
+      table+='</tbody></table></div>'
+      document.getElementById('mappingTableContent').innerHTML = table;
+}
+
+let toggleHidden = function(elem){
+    elem.classList.toggle('hidden')
+}
+
+let toggleMapping = async function(){
+    let mappingElem = document.getElementById('mappingTable');
+    toggleHidden(mappingTable);
+}
+let togglePath = async function(elem){
+    let toggleElemID = elem.getAttribute('pathID');
+    let toggleElem = document.getElementById(`${toggleElemID}_path`);
+    toggleHidden(toggleElem);
+}
+
+let deleteMapping = async function(elem){
+    let rmID = elem.getAttribute('mappingID');
+    let res = await post(apiPrefix+'/deleteMappingEntry', {
+        id: rmID
+    }, true);
+    if(res){
+        await reRenderMapping()
+    }else{
+        elem.classList.add('error')
+    }
+}
+
+
+
 let renderMenu = async function(){
 
     let interface = `
@@ -328,8 +386,11 @@ let renderMenu = async function(){
     <div class="rightButtonDiv">
         <button id="syncGameBtn" class="nes-btn" onClick="syncGame()">Sync Game</button>
     </div>
-    <div class="" style="margin-top:20px;">
+    <div class="leftButtonDiv" style="margin-top:20px;">
         <button id="pushRepo" class="nes-btn" onClick="pushRepo()">Git Push</button>
+    </div>
+    <div class="rightButtonDiv" style="margin-top:20px;">
+        <button id="toggleMapping" class="nes-btn" onClick="toggleMapping()">View Games</button>
     </div>
         
     </div>
@@ -435,6 +496,12 @@ let renderMenu = async function(){
         <h2 id="successMessage" class="nes-text is-primary"></h2>
         <button id="return" class="nes-btn is-primary" onClick="returnToMenu()">Return To Menu</button>
     </div>
+
+    <div id="mappingTable" style="margin-top:30px;" class="hidden nes-container ">
+    <h2  class="nes-text is-primary">Mapping Table</h2>
+    <div id="mappingTableContent"></div>
+
+    </div>
  
     `
     htmlArea.innerHTML = interface;
@@ -466,7 +533,10 @@ let renderMenu = async function(){
     syncGameDeviceArea = document.getElementById('syncGame_device_area')
 
     resetElements()
+    await reRenderMapping();
+
 }
+
 
 let renderFirstStep = async function(){
 

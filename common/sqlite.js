@@ -195,8 +195,29 @@ let updateRepoCopiedTo = async function(id){
     return date;
 }
 
+let getFullMapping = async function(){
+    let query = `
+        SELECT mapping.id,
+        mapping.game,
+        mapping.path, 
+        IFNULL(devices.name, 'Repository') as device,
+        platforms.name as platform
+        from mapping
+        left join platforms on mapping.platform = platforms.short
+        left join devices on mapping.device = devices.device
+        ORDER by
+        platform asc,
+        game asc `;
+
+    return await get(query);
+}
+
+let deleteMappingEntry = async function(id){
+    return await write(`DELETE from mapping WHERE id = '${id}'`)
+}
+
 let getSchema = function(){
     return tables;
 }
 
-module.exports={setup, getConfig, writeConfig, getPreferences, writePreference, getSchema, getRepo, getPlatformNames, newRepoRecord, updateRepoCopiedFrom, updateRepoCopiedTo}
+module.exports={setup, getConfig, writeConfig, getPreferences, writePreference, getSchema, getRepo, getPlatformNames, newRepoRecord, updateRepoCopiedFrom, updateRepoCopiedTo, getFullMapping, deleteMappingEntry}

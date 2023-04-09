@@ -154,6 +154,18 @@ let run = function(){
         response.send(res);
         response.end()
     });   
+  
+    //Mapping Table / delete
+    app.get(apiPrefix+'/getFullMapping', async function(request,response){
+        let mapping = await c.db.getFullMapping();
+        response.send(JSON.stringify(mapping));
+        response.end();
+    });
+    app.post(apiPrefix+'/deleteMappingEntry', async function(request, response){
+        console.log(request.body.id)
+        let res = await c.db.deleteMappingEntry(request.body.id);
+        response.send(JSON.stringify({result: res}));
+    });
 
 
     /**CONFIG PAGE**/
