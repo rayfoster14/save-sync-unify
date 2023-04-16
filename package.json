@@ -20,7 +20,8 @@
     "readline-sync": "^1.4.10",
     "simple-git": "^3.17.0",
     "sqlite3": "^5.1.6",
-    "zip-a-folder": "^1.1.5"
+    "zip-a-folder": "^1.1.5",
+    "zip-local": "^0.3.5"
   },
   "bin": "main.js",
   "pkg": {

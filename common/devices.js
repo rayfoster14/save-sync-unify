@@ -104,8 +104,8 @@ let syncTheSave = async function(source, pushList, online){
         for(let e = 0; e < online.length; e++){
             if(online[e].device === destination.device) device = online[e]
         }
-        if(device.pluginFunctions && device.pluginFunctions.copyFromTemp && device.pluginFunctions.copFromTemp[destination.platform]){
-            res = await device.pluginFunctions.copyFromTemp[k](device, destination);
+        if(device.pluginFunctions && device.pluginFunctions.copyFromTemp && device.pluginFunctions.copyFromTemp[destination.platform]){
+            res = await device.pluginFunctions.copyFromTemp[destination.platform](device, destination);
         }else{
             res = await device.functions.copyFromTemp(device, destination);
         }
