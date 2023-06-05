@@ -332,9 +332,9 @@ let reRenderMapping = async function(){
         if(!newGame) currentGame = mappingList[i].game;
         newText += `
         ${!newPlatform?`<h2>${mappingList[i].platform}</h2>`:''}
-        ${!newGame?`<hr><h3 style="color:#777">${mappingList[i].game}</h3>`:''}
-        <i class="nes-icon close deleteBtn" style="transform:none;float:left"onClick="deleteMapping(this)" mappingID=${mappingList[i].id} id="delete_${mappingList[i].id}"> </i>
-          <div>${mappingList[i].device} <span style="font-size:9px; color:${mappingList[i].exists?'#00b500':'#999'}">${mappingList[i].path}</span></div><br>
+        ${!newGame?`<h3 style="color:#777;margin-top:20px">${mappingList[i].game}</h3><hr>`:''}
+        <i class="nes-icon close deleteBtn" style="transform:none;float:left;margin-top:4px;"onClick="deleteMapping(this)" mappingID=${mappingList[i].id} id="delete_${mappingList[i].id}"> </i>
+          <div><div>${mappingList[i].device} </div><div style="font-size:9px; color:${mappingList[i].exists?'#8cc757':'#999'}">${mappingList[i].path}</div></div><br>
         `
       }
       document.getElementById('mappingTableContent').innerHTML = newText;
