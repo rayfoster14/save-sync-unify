@@ -158,6 +158,9 @@ let run = function(){
     //Mapping Table / delete
     app.get(apiPrefix+'/getFullMapping', async function(request,response){
         let mapping = await c.db.getFullMapping();
+        for(let i = 0; i < mapping.length; i++){
+            mapping[i].exists = fs.existsSync(`./TEMP/${mapping[i].deviceID}/${mapping[i].platformID}/${mapping[i].path}`);
+        }
         response.send(JSON.stringify(mapping));
         response.end();
     });

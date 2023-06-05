@@ -320,32 +320,24 @@ let pushRepo = async function(){
 
 let reRenderMapping = async function(){
     let mappingList = await (await fetch(apiPrefix+'/getFullMapping')).json();
-    let table = `<div class="nes-table-responsive">
-    <table class="nes-table is-bordered is-centered">
-      <thead>
-        <tr>
-          <th>Platform</th>
-          <th>Game</th>
-          <th>Device</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-      `
+      console.log(mappingList);
+      let newText = "";
+      let currentPlatform = "";
+      let currentGame = "";
+
       for(let i = 0; i < mappingList.length; i++){
-        table+=`
-        <tr class="mappingStripes">
-            <td>${mappingList[i].platform}</td>
-            <td  onClick="togglePath(this)" pathID=${i}>${mappingList[i].game}
-            <span id="${i}_path" class="hidden mappingPath">${mappingList[i].path}</span>
-            </td>
-            <td>${mappingList[i].device}</td>
-            <td class="centeredIcon"><i class="nes-icon close deleteBtn" onClick="deleteMapping(this)" mappingID=${mappingList[i].id} id="delete_${mappingList[i].id}"> </i></td>
-        </tr>
+        let newPlatform = currentPlatform === mappingList[i].platform;
+        let newGame = currentGame === mappingList[i].game;
+        if(!newPlatform) currentPlatform = mappingList[i].platform;
+        if(!newGame) currentGame = mappingList[i].game;
+        newText += `
+        ${!newPlatform?`<h2>${mappingList[i].platform}</h2>`:''}
+        ${!newGame?`<hr><h3 style="color:#777">${mappingList[i].game}</h3>`:''}
+        <i class="nes-icon close deleteBtn" style="transform:none;float:left"onClick="deleteMapping(this)" mappingID=${mappingList[i].id} id="delete_${mappingList[i].id}"> </i>
+          <div>${mappingList[i].device} <span style="font-size:9px; color:${mappingList[i].exists?'#00b500':'#999'}">${mappingList[i].path}</span></div><br>
         `
       }
-      table+='</tbody></table></div>'
-      document.getElementById('mappingTableContent').innerHTML = table;
+      document.getElementById('mappingTableContent').innerHTML = newText;
 }
 
 let toggleHidden = function(elem){

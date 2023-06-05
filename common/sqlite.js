@@ -200,6 +200,8 @@ let getFullMapping = async function(){
         SELECT mapping.id,
         mapping.game,
         mapping.path, 
+        mapping.platform as platformID,
+        mapping.device as deviceID,
         IFNULL(devices.name, 'Repository') as device,
         platforms.name as platform
         from mapping
