@@ -331,13 +331,21 @@ let reRenderMapping = async function(){
         if(!newPlatform) currentPlatform = mappingList[i].platform;
         if(!newGame) currentGame = mappingList[i].game;
         newText += `
-        ${!newPlatform?`<h2>${mappingList[i].platform}</h2>`:''}
-        ${!newGame?`<h3 style="color:#777;margin-top:20px">${mappingList[i].game}</h3><hr>`:''}
-        <i class="nes-icon close deleteBtn" style="transform:none;float:left;margin-top:4px;"onClick="deleteMapping(this)" mappingID=${mappingList[i].id} id="delete_${mappingList[i].id}"> </i>
-          <div><div>${mappingList[i].device} </div><div style="font-size:9px; color:${mappingList[i].exists?'#8cc757':'#999'}">${mappingList[i].path}</div></div><br>
+        ${!newPlatform?`<h2 class="mappingTitle" onClick="toggleMappedPlatform(this)" data="${mappingList[i].platformID}">${mappingList[i].platform}</h2><div class="mappedPlatform hidden" id="map-${mappingList[i].platformID}">`:''}
+        ${!newGame?`<div class="mappedEntry nes-container"><div class="mappedGame"><h3 style="color:#777;">${mappingList[i].game}</h3></div>`:''}
+        ${!newGame?'<div class="mappedDevice">':''}<i class="nes-icon close deleteBtn" style="transform:none;float:left;margin-top:4px;"onClick="deleteMapping(this)" mappingID=${mappingList[i].id} id="delete_${mappingList[i].id}"> </i>
+          <div><div>${mappingList[i].device} </div><div style="font-size:9px;padding-left:32px; color:${mappingList[i].exists?'#8cc757':'#999'}">
+          ${mappingList[i].path}</div></div>${(mappingList[i+1]) && (currentGame !==  mappingList[i+1].game) ? '</div></div>':''}
+          ${(mappingList[i+1]) && (currentPlatform !==  mappingList[i+1].platform) ? '</div>':''}
         `
       }
       document.getElementById('mappingTableContent').innerHTML = newText;
+}
+
+let toggleMappedPlatform = async function(elem){
+    let platform = elem.getAttribute('data');
+    let toggleElem = document.getElementById(`map-${platform}`);
+    toggleHidden(toggleElem);
 }
 
 let toggleHidden = function(elem){
@@ -346,6 +354,7 @@ let toggleHidden = function(elem){
 
 let toggleMapping = async function(){
     let mappingElem = document.getElementById('mappingTable');
+    await reRenderMapping();
     toggleHidden(mappingTable);
 }
 let togglePath = async function(elem){
