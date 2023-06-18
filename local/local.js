@@ -195,7 +195,62 @@ let pushRepositories = async function(){
     }
 }
 
+let syncRoms = async function(online){
+
+    let romSyncDevices = []; 
+    for(let i = 0; i < online.length; i++){ if(online[i].romDir) romSyncDevices.push(online[i]); }
+    let deviceList = romSyncDevices.map(function(x){x.text = x.name; x.value = x.device; return x})
+    let device = "";
+
+    do{
+        device = await ui.select(deviceList, 'Which device to Sync roms to?', undefined, true);
+        //Get Game Name
+        let platform = "";
+        if(device !== "" && device){
+            do{
+                let platformNames = await c.db.getPlatformNames()
+
+                let selectedDevice = {};
+                for(let i = 0; i < online.length; i++){
+                    if(online[i].device === device) selectedDevice = online[i];
+                }
+                let platformList = Object.keys(selectedDevice.romDir);
+                platformList = platformList.map(function(x){ 
+                    let y = {}
+                    for(let z = 0; z < platformNames.length; z++){
+                        if(platformNames[z].short === x) y.text = platformNames[z].name
+                    }; 
+                    y.value = x
+                    return y
+                });
+
+                platform = "";
+                platform = await ui.select(platformList, 'Which platform?', undefined, true);
+
+                let {found, notFound} = await c.rom.getRomList(selectedDevice, platform)
+
+                console.log(`\n   ${found.length}/${found.length+notFound.length}`.green + ' Found');
+                console.log('\n   Not Found');
+                for(let i = 0; i < notFound.length; i++){
+                    console.log(notFound[i].newFileName.red);
+                }
+
+                continueBool = await ui.bool('Continue Copy? ')
+                if(continueBool){
+                    let completed = await c.rom.copyRoms(notFound, selectedDevice);
+                    console.log(completed?'\nCompleted':'\nError')
+                }
+
+                }while (platform)
+            }
+        }while(device)
+    
+
+
+}
+
 let main = async function(){
+
     let state = await c.startup();
     if(!state)return false;
 
@@ -210,14 +265,15 @@ let main = async function(){
         exitEdit = await editDiscovery(devices);
     }while(!exitEdit)
     online = c.functions.getMasterList(devices);
-    online = await c.devices.prepareFiles(online);
-    repo = await c.functions.getRepo();
+    //online = await c.devices.prepareFiles(online);
+    //repo = await c.functions.getRepo();
 
     let options =
     [
         "Sync",
         "Add new Save",
         "Push Repositories",
+        "Sync Roms",
         "Quit"
     ]
     let quit;
@@ -227,6 +283,7 @@ let main = async function(){
             syncASave.bind(undefined, online, repo),
             addNewSave.bind(undefined, online,repo),
             pushRepositories.bind(undefined),
+            syncRoms.bind(undefined, online),
             function(){console.log('Exiting...');quit=true}
         ][choice]();
     }while(!quit)

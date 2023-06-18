@@ -64,11 +64,16 @@ let copyFromTemp = function(device, destination){
     fs.copyFileSync(copyFromPath, copyToPath)
     
     return fs.existsSync(copyToPath);
+}
 
+let copyRom = function(repoRom, destinationRom){
+    fs.copyFileSync(repoRom, destinationRom)
+    return fs.existsSync(destinationRom);
 }
 
 
 module.exports={
+    getDriveLetter,
     onlineCheck: async function(device){
         if(process.platform === "win32"){
             //Windows Version
@@ -98,5 +103,6 @@ module.exports={
         }
     },
     copyToTemp,
-    copyFromTemp
+    copyFromTemp,
+    copyRom
 }

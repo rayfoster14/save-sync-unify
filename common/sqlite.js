@@ -2,7 +2,7 @@ const sqlite3 = require('sqlite3').verbose();
 let fs = require('fs');
 let path = process.env.REPO_PATH;
 let dbFile = `${path}/repo.db`;
-let db;
+let gamedbFile = `${path}/gamedb.db`;
 let tables = {
     devices:{
         "device":	        "TEXT",
@@ -37,24 +37,25 @@ let tables = {
 
 
 
-let get = function(y){
-    return new Promise(function(resolve,reject){
-    db = new sqlite3.Database(dbFile, sqlite3.OPEN_READWRITE, (err) => {
-        db.all(y,function(err,res){
+let get = async function(y, gameDBbool){
+    let databaseFile = gameDBbool? gamedbFile: dbFile;
+    return new Promise(async function(resolve,reject){
+    let db = new sqlite3.Database(databaseFile, sqlite3.OPEN_READWRITE, async function(err) {
+        if(err)console.log('ERROR')
+        await db.all(y,async function(err,res){
             if(err){
-                console.log(err)
                 resolve(false)
             }
             resolve(res);
         });
         });
-        db.close();
+        db.close()
     })
 }
 
 let write = function(y, z){
     return new Promise(function(resolve,reject){
-    db = new sqlite3.Database(dbFile, sqlite3.OPEN_READWRITE, (err) => {
+    let db = new sqlite3.Database(dbFile, sqlite3.OPEN_READWRITE, (err) => {
         db.run(y,z,function(err,res){
             if(err){  console.log(err); resolve(false) }
             resolve(true);
@@ -218,8 +219,16 @@ let deleteMappingEntry = async function(id){
     return await write(`DELETE from mapping WHERE id = '${id}'`)
 }
 
+//Will retrun empty array if not found
+let getGameFromID = async function(id, platform, like){
+    let query = `SELECT title from db where gameid ${like?'like':'='} "${id}${like?'%':''}" AND platform = "${platform}"`;
+    let res = await get(query, true);
+    return res[0] && res[0].title ?  res[0].title: '';
+}
+
 let getSchema = function(){
     return tables;
 }
 
-module.exports={setup, getConfig, writeConfig, getPreferences, writePreference, getSchema, getRepo, getPlatformNames, newRepoRecord, updateRepoCopiedFrom, updateRepoCopiedTo, getFullMapping, deleteMappingEntry}
+module.exports={setup, getConfig, writeConfig, getPreferences, writePreference, getSchema, getRepo, getPlatformNames, newRepoRecord, updateRepoCopiedFrom, updateRepoCopiedTo, getFullMapping, deleteMappingEntry, getGameFromID
+}

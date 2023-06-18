@@ -99,10 +99,31 @@ let copyFromTemp = async function(device, destination){
 
 }
 
+let copyRom = async function(copyFromPath, deviceFile, device){
+
+    //FTP Client Create
+    let client = await newConnection();
+    await client.access({
+        host: device.ftpAddress,
+        user: device.ftpUser,
+        password: device.ftpPW,
+        port: device.ftpPort
+    });
+
+    //Copy file from temp directory to ftp directory
+    let result = await client.uploadFrom(copyFromPath, deviceFile);
+    
+    client.close()
+
+    //If result.code === 226 (successful) return true
+    return result.code === 226 ? true : false
+}
+
 module.exports={
     copyToTemp,
     copyFromTemp,
     onlineCheck,
-    newConnection
+    newConnection,
+    copyRom,
 }
 

@@ -20,6 +20,7 @@ let getOnlineDevices = async function(config, mode){
         device.paths = JSON.parse(device.paths);
         device.extensionSearch = JSON.parse(device.extensionSearch);
         device.platformList = Object.keys(device.paths);
+        if(device.romDir && device.romDir !=='') device.romDir = JSON.parse(device.romDir) 
     }
     return config
 }
