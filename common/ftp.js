@@ -13,9 +13,17 @@ let  newConnection = function () {
 
 //Checks URL and returns if it's alive or not
 let onlineCheck = async function(device){
-
-    let address = `${device.ftpAddress}:${device.ftpPort}`;
-    return await isReachable(address, {timeout:60000});
+    let available =  await isReachable(`${device.ftpAddress}:${device.ftpPort}`, {timeout:60000});
+    if(!available && device.ftpAddressVpn && device.ftpAddressVpn !== ''){
+        console.log('VPN')
+        //Check for VPN address is available and replace is available
+        available = await isReachable(`${device.ftpAddressVpn}:${device.ftpPort}`, {timeout:60000});
+        if(available) {
+            device.ftpAddress = device.ftpAddressVpn;
+            device.vpnActive = true
+        }
+    }
+    return available;
 };
 
 

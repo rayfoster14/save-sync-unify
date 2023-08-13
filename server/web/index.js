@@ -556,7 +556,7 @@ let renderFirstStep = async function(){
         let device = deviceList[i];
         html +=`<label>
             <input class="nes-checkbox" type="checkbox" onClick="writePrefChange(this)" device="${device.device}" id="${device.device}_pref" ${!device.online ? "disabled='true'" : '' } />
-            <span class="nes-text ${device.online?'is-success':'is-disabled'}"> ${device.name} </span>
+            <span class="nes-text ${device.online?'is-success':'is-disabled'}"> ${device.name} ${device.vpnActive ? '<span style="font-size:10px;color:gray;">VPN</span>':''} </span>
         </label><br>`
     }
     html+='</div>'
