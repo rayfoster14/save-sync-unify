@@ -127,15 +127,8 @@ let createExistingGameInfo = function(repoData){
     return infoStr
 }
 
-let createConfirmationGameInfo = function(device){
-    for(let i = 0; i < available.length; i++){
-        if(available[i].device === device){
-            latestRepo = available[i]
-        }else{
-            pushToList.push(available[i]);
-        }
-    }
-
+let createConfirmationGameInfo = function(){
+    
     let str = ` 
     <div class="nes-container is-centered is-dark with-title choice-section">
         <p class="title">Copying Save from</p>
@@ -148,6 +141,7 @@ let createConfirmationGameInfo = function(device){
     for(let u = 0; u < pushToList.length; u++){
         str+=`${pushToList[u].deviceName}<br>`
     }
+    if(pushToList.length === 0)str+='No Available Devices'
     str += `
         </p>
     </div>`;
@@ -216,17 +210,12 @@ let toggleHidden = function(elem){
 }
 
 let setUi = function(){
-    console.log('Set UI')
     for(thisArea in elems){
         elems[thisArea].area.classList[thisArea === area ? 'remove': 'add']('hidden');
     }
     if(area !== 'addGame' && area !== 'syncGame') return
     for(thisStep in elems[area].steps){
-        
         let elemStep = parseInt(elems[area].steps[thisStep].getAttribute('data-step'));
-      
-        console.log(elems[area].steps[thisStep])
-        console.log(step,elemStep, step>=elemStep)
         elems[area].steps[thisStep].classList[step >= elemStep ? 'remove':'add']('hidden');
     }
     elems.extra.area.classList.remove('hidden');
@@ -343,10 +332,11 @@ let syncGame_existingList  = async function(){
         available = [];
         let availableDevices = [];
         for(i in repoData){
-            if(repoData[i].present) availableDevices.push({value:repoData[i].device, text: repoData[i].deviceName})
-            available.push(repoData[i])
+            if(repoData[i].present) {
+                available.push(repoData[i]);
+                availableDevices.push({value:repoData[i].device, text: repoData[i].deviceName})
+            }
         }
-
         elems.syncGame.ui.syncGame_device.innerHTML = createDropdownSelects(availableDevices);
         
         step = 2;
@@ -358,10 +348,19 @@ let syncGame_device = async function(){
     let device = elems.syncGame.ui.syncGame_device.value;
     if(device!==""){
         pushToList = [];
+        for(let i = 0; i < available.length; i++){
+            if(available[i].device === device){
+                latestRepo = available[i]
+            }else{
+                pushToList.push(available[i]);
+            }
+        }
         elems.syncGame.info.confirm.innerHTML = createConfirmationGameInfo(device);
-        
         step = 3;
-        setUi()       
+        setUi()     
+        
+        //Hides Sync Button if no available copy-to are found
+        elems.syncGame.ui.syncGame_proceed.classList[pushToList.length === 0 ? 'add':'remove']('hidden')
     }
 }
 
@@ -456,8 +455,6 @@ let mapping_deleteMapping= async function(elem){
  *****************/
 
 let renderMenu = async function(){
-    console.log('Render Main')
-
     let topmenu = `
     <div id="menu">
         <div class="leftButtonDiv">
