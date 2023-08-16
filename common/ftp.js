@@ -15,7 +15,6 @@ let  newConnection = function () {
 let onlineCheck = async function(device){
     let available =  await isReachable(`${device.ftpAddress}:${device.ftpPort}`, {timeout:60000});
     if(!available && device.ftpAddressVpn && device.ftpAddressVpn !== ''){
-        console.log('VPN')
         //Check for VPN address is available and replace is available
         available = await isReachable(`${device.ftpAddressVpn}:${device.ftpPort}`, {timeout:60000});
         if(available) {

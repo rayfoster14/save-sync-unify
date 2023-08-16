@@ -1,7 +1,8 @@
 <head>
     <link href="https://unpkg.com/nes.css@latest/css/nes.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
-    
+    <meta name="viewport" content="width=750, height=1000">
+
 </head>
 
 
@@ -16,6 +17,10 @@
 </body>
 <script src="index.js"></script>
 <style>
+body{
+    margin-left: 20px;
+    margin-right: 20px;
+}
 .hidden {
     display: none;
 }
@@ -41,6 +46,9 @@
 }
 .error{
     background-color:rgba(155, 28, 28, 0.589);
+}
+#mappingTable{
+    margin-top:20px;
 }
 .mappingPath {
     color: #3d4f7b;
@@ -72,11 +80,21 @@
 .mappedEntry{
     margin-bottom:10px;
 }
+.choice-section{
+    margin-bottom:20px!important;
+}
+#extra_buttons{
+    padding: 20 20 0 20;
+     text-align: right;
+}
+.extra_elements{
+    display:inline-block;
+}
 </style>
 <script>
     /** PULSE CHECK **/
     setInterval(async function(){
-        fetch(window.location.href+'alive').then(function(res){
+        fetch('/alive').then(function(res){
             if(res.status !== 200){
                 throw new Error('down', {cause:response})
             }
