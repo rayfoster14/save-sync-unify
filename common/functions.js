@@ -133,6 +133,7 @@ let addOrUpdateRepo = async function(writeData, repo){
         //Make a repo entry too
         console.log('New Game... creating a repo file...')
         copy(`./TEMP/${device}/${platform}/${path}`, `${process.env.REPO_PATH}/${platform}/${game}`)
+        await c.git.add(`${process.env.REPO_PATH}`);
         let repoResult = await c.db.newRepoRecord({
             device : 'repo',
             game,
